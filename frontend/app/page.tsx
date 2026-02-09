@@ -5,6 +5,7 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { UploadButton } from "./UploadButton"
 
 type Message = {
   sender: "user" | "ai";
@@ -90,9 +91,6 @@ export default function Home() {
     }
   };
 
-  //   // Make input field empty
-  //   setQuery("");
-  // };
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-900 text-zinc-100">
@@ -177,13 +175,6 @@ export default function Home() {
                 {loading ? "AI skriver..." : "Skicka"}
               </button>
             </form>
-
-            <button
-              type="submit"
-              className="rounded bg-blue-600 px-3 py-5 hover:bg-blue-500"
-            >
-              Upload PDF
-            </button>
           </div>
 
           {/*PDF below chat */}
@@ -198,6 +189,8 @@ export default function Home() {
           <div className="p-6 text-zinc-400">Ingen PDF vald</div>
         )}
       </div> */}
+
+      <UploadButton/>
         </div>
       </div>
     </div>
