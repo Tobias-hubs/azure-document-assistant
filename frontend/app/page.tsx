@@ -6,9 +6,9 @@ import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-type Message = { 
+type Message = {
   sender: "user" | "ai";
-  text: string; 
+  text: string;
 };
 
 export default function Home() {
@@ -18,11 +18,11 @@ export default function Home() {
   const [docId, setDocId] = useState<string | null>("sample"); // Hardcoded for dev
   const [username, setUsername] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
-  const endRef = useRef<HTMLDivElement | null>(null); 
-  useEffect(() => { 
-    endRef.current?.scrollIntoView({ behavior: "smooth" }); 
+  const endRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const router = useRouter();
@@ -42,16 +42,16 @@ export default function Home() {
 
   const askBackend = async () => {
     if (!query || !docId) {
-      setMessages( prev => [ 
+      setMessages((prev) => [
         ...prev,
-        { sender: "ai", text: "Välj dokument och skriv en fråga." } 
+        { sender: "ai", text: "Välj dokument och skriv en fråga." },
       ]);
       return;
     }
 
-    setMessages(prev => [...prev, { sender: "user", text: query }]);
-    setQuery(""); 
-    setLoading(true); 
+    setMessages((prev) => [...prev, { sender: "user", text: query }]);
+    setQuery("");
+    setLoading(true);
 
     try {
       // Fallback: använd API_URL om den finns, annars localhost:3001
@@ -74,28 +74,24 @@ export default function Home() {
 
       const data = await response.json();
 
-      // Ai answer 
-      setMessages(prev => [ 
-        ...prev,
-        { sender: "ai", text: data.answer }
-      ]); 
+      // Ai answer
+      setMessages((prev) => [...prev, { sender: "ai", text: data.answer }]);
       setSources(data.sources);
       setPdfUrl(`${BASE_URL}/documents/sample.pdf`); // TODO need to be changed
     } catch (error) {
       console.error("Error fetching from backend:", error);
 
-      setMessages(prev => [ 
-        ...prev, 
-        { sender: "ai", text: "Something went wrong with backend response." }
-      ]); 
-      
-    } finally { 
-      setLoading(false); 
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: "Something went wrong with backend response." },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
   //   // Make input field empty
-  //   setQuery(""); 
+  //   setQuery("");
   // };
 
   return (
@@ -120,19 +116,21 @@ export default function Home() {
             )} */}
 
             {/* AI message */}
-            {messages.map((msg, i) => ( 
-              <div key={i} className={msg.sender === "user" ? "text-right" : ""}> 
-              <div 
-              className={ 
-                msg.sender === "user" 
-                ? "bg-blue-600 text-white p-3 rounded-xl inline-block max-w-xl"
-                : "bg-zinc-800 text-zinc-100 p-4 rounded-xl inline-block max-w-xl"
-
-              }
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={msg.sender === "user" ? "text-right" : ""}
               >
-                {msg.text}
+                <div
+                  className={
+                    msg.sender === "user"
+                      ? "bg-blue-600 text-white p-3 rounded-xl inline-block max-w-xl"
+                      : "bg-zinc-800 text-zinc-100 p-4 rounded-xl inline-block max-w-xl"
+                  }
+                >
+                  {msg.text}
                 </div>
-                </div>
+              </div>
             ))}
 
             <div ref={endRef} />
@@ -154,45 +152,43 @@ export default function Home() {
         </div>
 
         {/* Input */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-           if (!loading) askBackend();
-          }}
-          className="border-t border-zinc-700 p-4 flex gap-2"
-        >
-          <input
-            className="flex-1 rounded bg-zinc-800 border border-zinc-700 p-3"
-            type="text"
-            placeholder="Skriv din fråga här"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+        <div className="min-h-screen flex items-center justify-center bg-zinc-900">
+          <div className="w-full max-w-xl px-4 flex flex-col gap-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!loading) askBackend();
+              }}
+              className="border-t border-zinc-700 p-4 flex gap-2"
+            >
+              <input
+                className="flex-1 rounded bg-zinc-800 border border-zinc-700 p-3"
+                type="text"
+                placeholder="Skriv din fråga här"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
 
-          <button
-            type="submit"
-            className="rounded bg-blue-600 px-4 py-2 hover:bg-blue-500"//"rounded bg-blue-600 px-4 py-2 hover:bg-blue-500 disabled:opacity-50"
-            disabled={loading || !query.trim()}
-          >
-            {loading ? "AI skriver...":"Skicka"}
-          </button>
-        </form>
-      </div>
+              <button
+                type="submit"
+                className="rounded bg-blue-600 px-4 py-2 hover:bg-blue-500" //"rounded bg-blue-600 px-4 py-2 hover:bg-blue-500 disabled:opacity-50"
+                disabled={loading || !query.trim()}
+              >
+                {loading ? "AI skriver..." : "Skicka"}
+              </button>
+            </form>
 
- 
- 
+            <button
+              type="submit"
+              className="rounded bg-blue-600 px-3 py-5 hover:bg-blue-500"
+            >
+              Upload PDF
+            </button>
+          </div>
 
-      {/*PDF below chat */} 
+          {/*PDF below chat */}
 
-      <button 
-      type="submit" 
-      className="rounded bg-red-600 px-3 py-5 hover:bg-blue-500"
-      
-      >
-        Upload PDF
-      </button>
-     
-      {/* <div className="bg-zinc-800 rounded shadow overflow-hidden">
+          {/* <div className="bg-zinc-800 rounded shadow overflow-hidden">
         {pdfUrl ? (         // TODO PDF ingestion / PDF view 
           <iframe
             src={`${pdfUrl}#toolbar=0`} // Temporary solution
@@ -202,6 +198,8 @@ export default function Home() {
           <div className="p-6 text-zinc-400">Ingen PDF vald</div>
         )}
       </div> */}
+        </div>
+      </div>
     </div>
   );
 }
