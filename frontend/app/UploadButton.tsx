@@ -1,4 +1,4 @@
-
+import toast from "react-hot-toast"
 
 export function UploadButton() { 
 const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { 
@@ -6,15 +6,19 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!file) return; 
 
     const formData = new FormData(); 
-    formData.append("pdf", file);
+    formData.append("file", file);
 
-    const res = await fetch("/api/upload-pdf", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingest`, {
         method: "POST", 
         body: formData, 
     });
-
+   
     const data = await res.json(); 
+    toast.success(`PDF '${data.docId}' uppladdad!`); 
+    if (process.env.NODE_ENV !== "production") { 
     console.log("Upload result:", data); 
+    }
+
 }; 
 
 return (
@@ -33,5 +37,5 @@ return (
             Upload PDF
         </button>
     </div>
-)
+);
 }
