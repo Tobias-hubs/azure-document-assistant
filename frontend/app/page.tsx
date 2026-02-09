@@ -1,5 +1,7 @@
 // TODO Refactor into smaller components?
 
+// TODO UI is buggy! needs to be adressed
+
 "use client";
 
 import { useRef, useState } from "react";
