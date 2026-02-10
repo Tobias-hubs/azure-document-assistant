@@ -1,4 +1,4 @@
-
+// TODO Make into Modal (PdfFrame ? )
 type Props = { 
     pdfUrl: string | null; // TODO only Url?
 };
@@ -9,6 +9,7 @@ export function PdfViewer({ pdfUrl }: Props) {
             <div className="bg-zinc-800 p-6 rounded-xl text-zinc-400 text-sm">
                 Ingen PDF vald
             </div>
+
         ); 
     }
 
@@ -17,6 +18,7 @@ export function PdfViewer({ pdfUrl }: Props) {
             <iframe 
             src={`${pdfUrl}#toolbar=0`}
             className="w-full h-full"
+            title="PDF viewer"
             />
         </div>
 

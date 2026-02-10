@@ -17,10 +17,17 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [sources, setSources] = useState<any[]>([]); // Temporary any
-  const [docId, setDocId] = useState<string | null>("sample"); // Hardcoded for dev
+  const [docId, setDocId] = useState<string | null>(null); 
   const [username, setUsername] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeDoc, setActiveDoc] = useState<ActiveDoc | null>(null);
+  const [isPdfOpen, setIsPdfOpen] = useState(false);
+
+  type ActiveDoc = { 
+    docId: string; 
+    displayName: string; 
+  };
 
   const endRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -46,7 +53,7 @@ export default function Home() {
     if (!query || !docId) {
       setMessages((prev) => [
         ...prev,
-        { sender: "ai", text: "Välj dokument och skriv en fråga." },
+        { sender: "ai", text: "Ladda upp ett dokument innan du ställer en fråga." },
       ]);
       return;
     }
@@ -79,7 +86,6 @@ export default function Home() {
       // Ai answer
       setMessages((prev) => [...prev, { sender: "ai", text: data.answer }]);
       setSources(data.sources);
-      setPdfUrl(`${BASE_URL}/documents/sample.pdf`); // TODO need to be changed
     } catch (error) {
       console.error("Error fetching from backend:", error);
 
@@ -123,7 +129,15 @@ export default function Home() {
       onSubmit={askBackend}
   />
           <div className="mt-3 flex justify-end">
-            <UploadButton />
+            <UploadButton
+            onUploadSuccess={(data) => { 
+              setDocId(data.docId); 
+              setActiveDoc({
+                docId: data.docId, 
+                displayName: data.displayName,
+              });
+            }}
+            />
           </div>
         </div>
       </div>
