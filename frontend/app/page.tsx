@@ -1,18 +1,17 @@
-// TODO Refactor into smaller components?
 
-// TODO UI is buggy! needs to be adressed
 
 "use client";
 
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { UploadButton } from "./UploadButton";
+import { UploadButton } from "./components/upload/UploadButton";
+import { Message } from "./components/types/chat";
+import { ChatFeed } from "./components/chat/ChatFeed";
+import { ChatInput } from "./components/chat/ChatInput";
+import { SourcePanel } from "./components/chat/SourcesPanel"; 
+import { PdfViewer } from "./components/pdf/PdfViewer";
 
-type Message = {
-  sender: "user" | "ai";
-  text: string;
-};
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -105,118 +104,28 @@ export default function Home() {
         </div>
 
         {/* Chat feed */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex ${msg.sender === "user" ? "flex justify-end" : "flex justify-start"}`}
-            >
-              <div
-                className={`
-                    max-w-[70%]
-                    rounded-2xl 
-                    px-4 py-3
-                    leading-relaxed
-                    whitespace-pre-wrap
-                    break-words
-                    ${
-                      msg.sender === "user"
-                        ? "bg-blue-600 text-white p-3 rounded-xl inline-block max-w-xl"
-                        : "bg-zinc-800 text-zinc-100 p-4 rounded-xl inline-block max-w-xl"
-                    }
-                    `}
-              >
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {/* Typing indicator */}
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-zinc-800 text-zinc-400 px-4 py-3 rounded-2xl rounded-bl-sm text-sm italic">
-                AI skriver...
-              </div>
-            </div>
-          )}
+        <ChatFeed
+      messages={messages}
+      loading={loading}
+      endRef={endRef}
+        />
 
-          <div ref={endRef} />
+        <div className="space-y-4 p-6 border-t border-zinc-700">
+          <SourcePanel sources={sources} /> 
+          <PdfViewer pdfUrl={pdfUrl} /> 
         </div>
 
         {/* Input & Upload */}
-        <div className="shrink-0 border-t border-zinc-700 p-4 bg-zinc-900">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!loading) askBackend();
-            }}
-            className="flex items-end gap-2 bg-zinc-800 border border-zinc-700 rounded-2xl px-3 py-2"
-          >
-            <textarea
-              rows={1}
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                e.target.style.height = "auto";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-              }}
-              placeholder="Skriv din fråga här"
-              className="flex-1
-            resize-none
-            bg-transparent
-            text-zinc-100
-            placeholder-zinc-400
-            outline-none
-            leading-6
-            max-h-40
-            overflow-y-auto"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (!loading && query.trim()) askBackend();
-                }
-              }}
-            />
-
-            <button
-              type="submit"
-              className="shrink-0 rounded bg-blue-600 px-4 py-2 hover:bg-blue-500 disabled:opacity-50 text-sm" //"rounded bg-blue-600 px-4 py-2 hover:bg-blue-500 disabled:opacity-50"
-              disabled={loading || !query.trim()}
-            >
-              Skicka
-            </button>
-          </form>
+      <ChatInput
+       query={query}
+      setQuery={setQuery}
+       loading={loading}
+      onSubmit={askBackend}
+  />
           <div className="mt-3 flex justify-end">
             <UploadButton />
           </div>
         </div>
       </div>
-    </div>
-
-    // {/* Sources */}
-    // {sources.length > 0 && (
-    //   <div className="bg-zinc-800 p-4 rounded-xl">
-    //     <h3 className="font-semibold">Källor:</h3>
-    //     <ul className="list-disc pl-5 text-sm text-zinc-400">
-    //       {sources.map((source, index) => (
-    //         <li key={index}>
-    //           {source.documentName} - sida {source.page}
-    //         </li>
-    //       ))}
-    //     </ul>
-    //   </div>
-    // )}
-
-    // {/*PDF below chat */}
-
-    //    {/* <div className="bg-zinc-800 rounded shadow overflow-hidden">
-    //   {pdfUrl ? (         // TODO PDF ingestion / PDF view
-    //     <iframe
-    //       src={`${pdfUrl}#toolbar=0`} // Temporary solution
-    //       className="w-full h-full"
-    //     />
-    //   ) : (
-    //     <div className="p-6 text-zinc-400">Ingen PDF vald</div>
-    //   )}
-    // </div> */}
   );
 }
