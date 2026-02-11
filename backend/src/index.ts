@@ -3,10 +3,12 @@ import cors from "cors";
 import { SearchController } from "./controllers/searchControllers";
 import { RagService } from "./services/ragService";
 import { MockVectorStore } from "./adapters/mockVectorStore";
-import { MockLLMClient } from "./adapters/mockLLMClient"; // comment out to test ai 
+// import { MockLLMClient } from "./adapters/mockLLMClient"; // comment out to test ai 
 import { OpenAILLMClient } from "./adapters/openaiLLMClient" 
 import { MockLogger } from "./utils/logger";
-import ingestRoutes from "./routes/ingestRoutes";
+import { createIngestRoutes } from "./routes/ingestRoutes";
+import { PdfService } from "./services/pdfService";
+import { DocumentIngestService } from "./services/documentIngestService";
 import path from "path";
 import dotenv from "dotenv"; 
 
@@ -16,12 +18,20 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/api", ingestRoutes);
+//app.use("/api", ingestRoutes);
 
 
 const vectorStore = new MockVectorStore();
-const llmClient = new MockLLMClient();  // TODO comment out to test ai 
-// const llmClient = new OpenAILLMClient(); 
+// const llmClient = new MockLLMClient();  // TODO comment out to test ai 
+
+const ingestService = new DocumentIngestService( 
+    new PdfService(), 
+    vectorStore
+); 
+
+app.use("/api", createIngestRoutes(ingestService));
+
+const llmClient = new OpenAILLMClient(); 
 const logger = new MockLogger();
 
 const ragService = new RagService(vectorStore, llmClient, logger);
@@ -34,13 +44,13 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
-        const { query, docId } = req.body;
+        const { query, docId, userId } = req.body;
 
         if (!query || !docId) {
             return res.status(400).json({ error: "query och docId krävs" });
         }
 
-        const result = await searchController.search(query, docId);
+        const result = await searchController.search(query, docId, userId);
         res.json(result);
     } catch (error) {
         console.error("Search error:", error);

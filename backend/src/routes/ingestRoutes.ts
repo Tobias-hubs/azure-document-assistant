@@ -5,12 +5,10 @@ import { DocumentIngestService } from "../services/documentIngestService";
 import { PdfService } from "../services/pdfService";
 import { MockVectorStore } from "../adapters/mockVectorStore";
 
+export function createIngestRoutes(ingestService: DocumentIngestService) {  
 const router = Router(); 
 
-const ingestService = new DocumentIngestService( 
-    new PdfService(), 
-    new MockVectorStore()
-);
+
 
 const controller = new IngestController(ingestService); 
 
@@ -20,4 +18,5 @@ router.post(
     controller.ingest
 );
 
-export default router; 
+return router; 
+}

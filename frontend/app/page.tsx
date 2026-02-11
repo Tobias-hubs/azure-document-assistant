@@ -66,6 +66,7 @@ export default function Home() {
     try {
       // Fallback: använd API_URL om den finns, annars localhost:3001
       const BASE_URL = API_URL || "http://localhost:3001";
+      console.log("Sending search:", query, docId);
 
       const response = await fetch(`${BASE_URL}/api/search`, {
         method: "POST",

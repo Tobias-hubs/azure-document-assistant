@@ -9,10 +9,14 @@ export class MockVectorStore implements VectorStoreAdapter {
     console.log(`Mock: Lagrade ${chunks.length} chunks för dokument ${docId}`);
   }
 
-  async similaritySearch(embedding: number[], topK: number): Promise<Chunk[]> {
+  async similaritySearch(embedding: number[], docId: string, topK: number): Promise<Chunk[]> {
     // Simulate similarity search – return random chunks
     // In a real implementation, this would use cosine similarity on embeddings
-    const shuffled = [...this.chunks].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, Math.min(topK, this.chunks.length));
+   // 
+    const filtered = this.chunks.filter(c => c.docId === docId); 
+
+    const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+
+    return shuffled.slice(0, Math.min(topK, filtered.length));
   }
 }
