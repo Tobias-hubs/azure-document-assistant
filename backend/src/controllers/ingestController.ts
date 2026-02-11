@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { DocumentIngestService } from "../services/documentIngestService";
+import { randomUUID } from "crypto"; 
 
 export class IngestController { 
     constructor(private ingestService: DocumentIngestService) {}
@@ -12,14 +13,15 @@ export class IngestController {
                 return res.status(400).json({ error: "No PDF uploaded" }); 
             }
 
-            const docId = req.body.docId || "uploaded-document"; 
+            const docId = randomUUID();
 
             await this.ingestService.ingestBuffer(file.buffer, docId); 
 
             res.json({ 
                 status: "ok",
                 docId, 
-                chunksIngested: true
+                chunksIngested: true, 
+                displayName: file.originalname,
             });
         } catch (err) { 
             console.error(err); 
