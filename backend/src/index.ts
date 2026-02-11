@@ -18,10 +18,6 @@ app.use(cors());
 app.use(express.json());
 app.use("/api", ingestRoutes);
 
-app.use(
-  "/documents",
-  express.static(path.join(__dirname, "..", "documents"))
-);
 
 const vectorStore = new MockVectorStore();
 const llmClient = new MockLLMClient();  // TODO comment out to test ai 
