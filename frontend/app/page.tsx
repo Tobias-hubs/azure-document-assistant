@@ -11,6 +11,7 @@ import { ChatFeed } from "./components/chat/ChatFeed";
 import { ChatInput } from "./components/chat/ChatInput";
 import { SourcePanel } from "./components/chat/SourcesPanel"; 
 import { PdfViewer } from "./components/pdf/PdfViewer";
+import { PdfChip } from "./components/pdf/PdfChip";
 
 
 export default function Home() {
@@ -53,7 +54,7 @@ export default function Home() {
     if (!query || !docId) {
       setMessages((prev) => [
         ...prev,
-        { sender: "ai", text: "Ladda upp ett dokument innan du ställer en fråga." },
+        { sender: "ai", text: "Ladda upp ett dokument innan du ställer en fråga." }, // TODO Should not be a AI answer - instead a text prompt
       ]);
       return;
     }
@@ -116,10 +117,21 @@ export default function Home() {
       endRef={endRef}
         />
 
-        <div className="space-y-4 p-6 border-t border-zinc-700">
+        
           <SourcePanel sources={sources} /> 
-          <PdfViewer pdfUrl={pdfUrl} /> 
+          {/* <PdfViewer pdfUrl={pdfUrl} />  */}
+          {activeDoc && (
+          <div className="space-y-4 p-6 border-t border-zinc-700">
+          <PdfChip 
+          displayName={activeDoc.displayName}
+          onOpen={() => setIsPdfOpen(true)}
+          onRemove={() => { 
+            setActiveDoc(null);
+            setDocId(null);
+          }}
+          />
         </div>
+  )}
 
         {/* Input & Upload */}
       <ChatInput
