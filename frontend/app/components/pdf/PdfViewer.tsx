@@ -1,4 +1,4 @@
-// TODO Make into Modal (PdfFrame ? )
+
 type Props = { 
     pdfUrl: string | null; // TODO only Url?
 };

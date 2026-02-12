@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 export class IngestController { 
     constructor(private ingestService: DocumentIngestService) {}
 
+    
     ingest = async (req: Request, res: Response) => { 
         try { 
             const file = req.file; 
@@ -15,6 +16,7 @@ export class IngestController {
 
             const docId = randomUUID();
 
+// INGEST 4 - Controller receives req.file and forwards the PDF buffer
             await this.ingestService.ingestBuffer(file.buffer, docId); 
 
             res.json({ 

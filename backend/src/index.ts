@@ -29,6 +29,7 @@ const ingestService = new DocumentIngestService(
     vectorStore
 ); 
 
+// INGEST 2 - Server takes request
 app.use("/api", createIngestRoutes(ingestService));
 
 const llmClient = new OpenAILLMClient(); 

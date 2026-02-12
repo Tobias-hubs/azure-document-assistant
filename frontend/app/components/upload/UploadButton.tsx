@@ -11,19 +11,30 @@ type UploadButtonProps = {
 
 export function UploadButton({ onUploadSuccess }: UploadButtonProps) { 
 const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { 
+   //INGEST  1 - User selects a PDF file in browser.
+   // <input type="file"> gives a File object. 
     const file = e.target.files?.[0];
     if (!file) return; 
 
+    // Create a multipart/form-data payload
+    // Form data allows to send binary files in an HTTP POST request.
     const formData = new FormData(); 
+
+    // Append the actual PDF file (binary )
     formData.append("file", file); 
     
+    //  Send to PDF to backend /api/ingest
+    // Backend uses Multer's upload.singe("file") to read as req.file
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingest`, {
         method: "POST", 
+        // Do not set Content-Type manually for FormData. 
         body: formData, 
     });
    
+    // Parse backend response
     const data: UploadResult = await res.json(); 
 
+    // Notify user
     toast.success(`PDF '${data.displayName}' uppladdad!`); 
     onUploadSuccess?.(data);
 
