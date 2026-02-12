@@ -23,6 +23,12 @@ export class RagService {
 console.log("Retrieved chunks:", chunks.length);
     // 3) Compose prompt with sources
     const prompt = this.composePrompt(query, chunks);
+    
+    console.log(`[RAG] topK=${topK}, 
+      retreivedChunks=${chunks.length}, docId=${docId}`); 
+      if (chunks.length > topK) { 
+        console.warn("[RAG] More chunks returned than topK"); 
+      }
 
     // 4) Generate answer from LLM
     const answerText = await this.llm.generate(prompt);

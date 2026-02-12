@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { SearchController } from "./controllers/searchControllers";
 import { RagService } from "./services/ragService";
-import { MockVectorStore } from "./adapters/mockVectorStore";
+import { InMemoryVectorStore } from "./adapters/InMemoryVectorStore";
 // import { MockLLMClient } from "./adapters/mockLLMClient"; // comment out to test ai 
 import { OpenAILLMClient } from "./adapters/openaiLLMClient" 
 import { MockLogger } from "./utils/logger";
@@ -21,7 +21,7 @@ app.use(express.json());
 //app.use("/api", ingestRoutes);
 
 
-const vectorStore = new MockVectorStore();
+const vectorStore = new InMemoryVectorStore();
 // const llmClient = new MockLLMClient();  // TODO comment out to test ai 
 
 const ingestService = new DocumentIngestService( 
