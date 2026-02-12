@@ -38,11 +38,13 @@ export class DocumentIngestService {
       const end = start + CHUNK_SIZE * 4; // 1 token ≈ 4 tecken
       const chunkText = text.slice(start, end);
 
+      const embedding = await this.llm.embed(chunkText); // 
+
       chunks.push({
         id: `${docId}-${index++}`,
         docId,
         text: chunkText,
-        embedding: [], // TODO 
+        embedding: embedding, // FIX Embedding empty
         sourceRef: {
           documentName: docId,
           page: 1, // placeholder for now
