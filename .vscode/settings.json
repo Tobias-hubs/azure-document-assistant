@@ -1,0 +1,43 @@
+{
+    "todo-tree.general.tags": [
+        "TODO",
+        "FIX",
+        "REFACTOR",
+        "OPTIMIZE",
+        "RAG",
+        "EMBEDDING",
+        "PROMPT",
+        "INGEST", 
+        "SEARCH"
+    ],
+    "todo-tree.tree.showBadges": true,
+    "todo-tree.highlights.defaultHighlight": {
+        "type": "text"
+    },
+    "todo-tree.highlights.customHighlight": {
+        "TODO": {
+            "foreground": "#ffffff",
+            "background": "#007acc"
+        },
+        "FIX": {
+            "foreground": "#ffffff",
+            "background": "#d73a49"
+        },
+        "REFACTOR": {
+            "foreground": "#ffffff",
+            "background": "#6f42c1"
+        },
+        "OPTIMIZE": {
+            "foreground": "#ffffff",
+            "background": "#28a745"
+        },
+        "INGEST": {
+            "foreground": "#000000",
+            "background": "#d1bf21"
+        },
+        "SEARCH": {
+            "foreground": "#000000",
+            "background": "#53d121"
+        }
+    }
+}
