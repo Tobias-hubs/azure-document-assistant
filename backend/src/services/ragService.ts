@@ -15,13 +15,17 @@ export class RagService {
 
     const t0 = Date.now();
 
-    // 1) Embed query
+    //  Embed query 
+    // SEARCH 4 - Embed the query into a numerical vector representation (used in similaritySearch) 
     const queryEmbedding = await this.llm.embed(query);
 
-    // 2) Retrieve top-K chunks
+    // SEARCH 5 — Retrieve topK relevant chunks for the given docId
+    //  Retrieve top-K chunks
     const chunks: Chunk[] = await this.store.similaritySearch(queryEmbedding, docId, topK);
-console.log("Retrieved chunks:", chunks.length);
-    // 3) Compose prompt with sources
+    console.log("Retrieved chunks:", chunks.length);
+
+    // Compose prompt with sources
+    // SEARCH 6 — Build final prompt using the query + retrieved chunks
     const prompt = this.composePrompt(query, chunks);
     
     console.log(`[RAG] topK=${topK}, 
@@ -30,7 +34,7 @@ console.log("Retrieved chunks:", chunks.length);
         console.warn("[RAG] More chunks returned than topK"); 
       }
 
-    // 4) Generate answer from LLM
+    // SEARCH 7 - Generate answer from LLM
     const answerText = await this.llm.generate(prompt);
 
     // 5) Collect sources and log

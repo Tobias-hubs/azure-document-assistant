@@ -43,6 +43,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Internal Document Assistant API is running");
 });
 
+// SEARCH 2 - Server recieves search request with query + docId
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
         const { query, docId, userId } = req.body;
