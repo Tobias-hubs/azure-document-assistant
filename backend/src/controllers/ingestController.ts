@@ -8,13 +8,13 @@ export class IngestController {
     
     ingest = async (req: Request, res: Response) => { 
         try { 
-            const file = req.file; 
+            const file = req.file; // PDF-buffer
 
             if (!file) { 
                 return res.status(400).json({ error: "No PDF uploaded" }); 
             }
 
-            const docId = randomUUID();
+            const docId = randomUUID(); // Unique ID
 
 // INGEST 4 - Controller receives req.file and forwards the PDF buffer
             await this.ingestService.ingestBuffer(file.buffer, docId); 

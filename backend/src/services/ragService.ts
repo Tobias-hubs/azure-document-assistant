@@ -29,7 +29,7 @@ export class RagService {
     const prompt = this.composePrompt(query, chunks);
     
     console.log(`[RAG] topK=${topK}, 
-      retreivedChunks=${chunks.length}, docId=${docId}`); 
+      retrievedChunks=${chunks.length}, docId=${docId}`); 
       if (chunks.length > topK) { 
         console.warn("[RAG] More chunks returned than topK"); 
       }

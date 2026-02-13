@@ -14,11 +14,11 @@ export class DocumentIngestService {
 
   async ingestBuffer(buffer: Buffer, docId: string): Promise<void> {
 
-    // INGEST 5 - pdfService extracts text from the binary PDF buffer
-    const text = await this.pdfService.extractText(buffer);
+    // INGEST 5 - pdfService class extracts text with pdf-parse from the binary PDF buffer 
+    const text = await this.pdfService.extractText(buffer); 
 
 
-    // Token & chunk settings for sliding-window chunking (divide text in chunks(parts) & overlap to keep context)
+    // Token & chunk settings for sliding-window chunking (divide text in chunks(parts) & overlap to keep context when AI read chunks)
     const CHUNK_SIZE = 900;
     const OVERLAP = 100;
     const MAX_CHUNKS = 2000; // Safety limit 
@@ -46,7 +46,7 @@ export class DocumentIngestService {
         id: `${docId}-${index++}`,
         docId,
         text: chunkText,
-        embedding: embedding, // FIX Embedding empty
+        embedding: embedding, // 
         sourceRef: {
           documentName: docId,
           page: 1, // placeholder for now

@@ -24,10 +24,8 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
         totalChunks=${this.chunks.length}`); 
     } 
   }
-// FIX embedding array is empty 
+
   async similaritySearch(embedding: number[], docId: string, topK: number): Promise<Chunk[]> {
-    // Simulate similarity search – return random chunks
-    // In a real implementation, this would use cosine similarity on embeddings
    
     // Filter chunks from this document "docID"(UUID)
     const filtered = this.chunks.filter(c => c.docId === docId); 

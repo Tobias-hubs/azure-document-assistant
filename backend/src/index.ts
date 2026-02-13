@@ -5,7 +5,7 @@ import { RagService } from "./services/ragService";
 import { InMemoryVectorStore } from "./adapters/InMemoryVectorStore";
 // import { MockLLMClient } from "./adapters/mockLLMClient"; // comment out to test ai 
 import { OpenAILLMClient } from "./adapters/openaiLLMClient" 
-import { MockLogger } from "./utils/logger";
+import { Logger } from "./utils/logger";
 import { createIngestRoutes } from "./routes/ingestRoutes";
 import { PdfService } from "./services/pdfService";
 import { DocumentIngestService } from "./services/documentIngestService";
@@ -35,7 +35,7 @@ const ingestService = new DocumentIngestService(
 app.use("/api", createIngestRoutes(ingestService));
 
 
-const logger = new MockLogger();
+const logger = new Logger();
 
 const ragService = new RagService(vectorStore, llmClient, logger);
 
