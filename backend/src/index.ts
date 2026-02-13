@@ -23,16 +23,18 @@ app.use(express.json());
 
 const vectorStore = new InMemoryVectorStore();
 // const llmClient = new MockLLMClient();  // TODO comment out to test ai 
+const llmClient = new OpenAILLMClient(); 
 
 const ingestService = new DocumentIngestService( 
     new PdfService(), 
-    vectorStore
+    vectorStore, 
+    llmClient
 ); 
 
 // INGEST 2 - Server takes request
 app.use("/api", createIngestRoutes(ingestService));
 
-const llmClient = new OpenAILLMClient(); 
+
 const logger = new MockLogger();
 
 const ragService = new RagService(vectorStore, llmClient, logger);

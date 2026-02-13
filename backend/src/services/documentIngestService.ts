@@ -3,11 +3,13 @@
 import { PdfService } from "./pdfService";
 import { VectorStoreAdapter } from "../adapters/vectorStore";
 import { Chunk } from "../models/types";
+import { LLMClient } from "../adapters/llmClient";
 
 export class DocumentIngestService {
   constructor(
     private pdfService: PdfService,
     private vectorStore: VectorStoreAdapter,
+    private llm: LLMClient,
   ) {}
 
   async ingestBuffer(buffer: Buffer, docId: string): Promise<void> {

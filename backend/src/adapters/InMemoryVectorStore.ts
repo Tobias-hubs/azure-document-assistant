@@ -38,7 +38,7 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
       score: this.cosineSimilarity(embedding, chunk.embedding)
     })); 
 
-    // Sort by relevance (highest first)
+    // Sort by relevance (highest first) 
     scored.sort((a, b) => b.score - a.score); 
 
     // take topK 
@@ -48,20 +48,29 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
 
    // Cosine similarity-calc
    private cosineSimilarity(a: number[], b: number[]): number { 
-    if (a.length === 0 || b.length === 0) return 0; 
+   
+    // Guard for undefined 
+    if (!a || !b || a.length === 0 || b.length === 0) { 
+      return 0; 
+    }
+   
+    if (a.length !== b.length ) return 0; 
 
     let dotProduct = 0; 
     let normA = 0; 
     let normB = 0; 
 
     for (let i = 0; i < a.length; i++) { 
-        dotProduct += a[i] * b[i]; 
-        normA += a[i] * a[i];
-        normB += b[i] * b[i];
+      const aValue = a[i] ?? 0; 
+      const bValue = b[i] ?? 0; 
+
+        dotProduct += aValue * bValue; 
+        normA += aValue * aValue;
+        normB += bValue * bValue;
     }
     
     const denominator = Math.sqrt(normA) * Math.sqrt(normB); 
-    return denominator = 0 ? 0 : dotProduct / denominator; 
+    return denominator === 0 ? 0 : dotProduct / denominator; 
    }
   }
 
