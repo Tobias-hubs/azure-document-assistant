@@ -26,13 +26,49 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
   }
 
   async similaritySearch(embedding: number[], docId: string, topK: number): Promise<Chunk[]> {
-    // Simulate similarity search – return random chunks
-    // In a real implementation, this would use cosine similarity on embeddings
-   // 
+
+   
+    // Filter chunks from this document "docID"(UUID)
     const filtered = this.chunks.filter(c => c.docId === docId); 
 
-    const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+    // Calculate similarity for each chunk
+    const scored = filtered.map(chunk => ({ 
+      chunk, 
+      score: this.cosineSimilarity(embedding, chunk.embedding)
+    })); 
 
-    return shuffled.slice(0, Math.min(topK, filtered.length));
-  }
+    // Sort by relevance (highest first) 
+    scored.sort((a, b) => b.score - a.score); 
+
+    // take topK 
+    return scored.slice(0, Math.min(topK, filtered.length)) 
+  .map(s => s.chunk); 
+  } 
+
+   // Cosine similarity-calc
+   private cosineSimilarity(a: number[], b: number[]): number { 
+   
+    if (a.length === 0 || b.length === 0 ) return 0; 
+
+    if (a.length !== b.length) { 
+      throw new Error("Vector dimension mismatch"); 
+    }
+
+    let dotProduct = 0; 
+    let normA = 0; 
+    let normB = 0; 
+
+    for (let i = 0; i < a.length; i++) { 
+      const aValue = a[i]!; 
+      const bValue = b[i]!; 
+
+        dotProduct += aValue * bValue; 
+        normA += aValue * aValue;
+        normB += bValue * bValue;
+    }
+    
+    const denominator = Math.sqrt(normA) * Math.sqrt(normB); 
+    return denominator === 0 ? 0 : dotProduct / denominator; 
+   }
+
 }

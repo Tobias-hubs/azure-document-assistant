@@ -14,7 +14,7 @@ const controller = new IngestController(ingestService);
 //INGEST 3 - Multer catches "file" in route
 router.post(
     "/ingest",
-    upload.single("file"), // 
+    upload.single("file"), 
     controller.ingest
 );
 

@@ -1,5 +1,5 @@
-export class MockLogger {
+export class Logger {
   logSearch(docId: string, query: string, sources: any[], latencyMs: number): void {
-    console.log(`[MOCK LOG] Doc: ${docId} | Query: "${query}" | Sources: ${sources.length} | Latency: ${latencyMs}ms`);
+    console.log(`[SEARCH] Doc: ${docId} | Query: "${query}" | Sources: ${sources.length} | Latency: ${latencyMs}ms`);
   }
 }
