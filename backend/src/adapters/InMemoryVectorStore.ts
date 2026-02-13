@@ -47,20 +47,19 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
    // Cosine similarity-calc
    private cosineSimilarity(a: number[], b: number[]): number { 
    
-    // Guard for undefined 
-    if (!a || !b || a.length === 0 || b.length === 0) { 
-      return 0; 
+    if (a.length === 0 || b.length === 0 ) return 0; 
+
+    if (a.length !== b.length) { 
+      throw new Error("Vector dimension mismatch"); 
     }
-   
-    if (a.length !== b.length ) return 0; 
 
     let dotProduct = 0; 
     let normA = 0; 
     let normB = 0; 
 
     for (let i = 0; i < a.length; i++) { 
-      const aValue = a[i] ?? 0; 
-      const bValue = b[i] ?? 0; 
+      const aValue = a[i]!; 
+      const bValue = b[i]!; 
 
         dotProduct += aValue * bValue; 
         normA += aValue * aValue;
