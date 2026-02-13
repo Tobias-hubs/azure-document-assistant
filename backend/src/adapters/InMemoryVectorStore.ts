@@ -26,6 +26,7 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
   }
 
   async similaritySearch(embedding: number[], docId: string, topK: number): Promise<Chunk[]> {
+
    
     // Filter chunks from this document "docID"(UUID)
     const filtered = this.chunks.filter(c => c.docId === docId); 
@@ -69,5 +70,5 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
     const denominator = Math.sqrt(normA) * Math.sqrt(normB); 
     return denominator === 0 ? 0 : dotProduct / denominator; 
    }
-  }
 
+}
