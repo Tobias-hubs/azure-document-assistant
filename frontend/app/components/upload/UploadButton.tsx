@@ -31,8 +31,16 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         body: formData, 
     });
    
-    // Parse backend response
-    const data: UploadResult = await res.json(); 
+    // Parse backend response & runtime check
+    const raw = await res.json(); 
+    if (!raw.docId || !raw.displayName) { 
+        throw new Error("Invalid response from server"); 
+    } 
+    
+    const data: UploadResult = raw;
+    
+    //  const data: UploadResult = await res.json(); 
+   
 
     // Notify user
     toast.success(`PDF '${data.displayName}' uppladdad!`); 
@@ -50,7 +58,7 @@ return (
     <div>
         <input
         type="file"
-        accept="application/pdf"
+        accept="application/pdf" // Only PDF(Text) for now
         className="hidden"
         id="pdfInput"
         onChange={handleUpload}

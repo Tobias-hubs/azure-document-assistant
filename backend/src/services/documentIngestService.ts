@@ -6,6 +6,7 @@ import { Chunk } from "../models/types";
 import { LLMClient } from "../adapters/llmClient";
 
 export class DocumentIngestService {
+  // Dependency injection
   constructor(
     private pdfService: PdfService,
     private vectorStore: VectorStoreAdapter,
