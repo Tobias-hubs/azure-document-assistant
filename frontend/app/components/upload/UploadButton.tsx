@@ -1,3 +1,5 @@
+/* In the future this component may need to be refactored, 
+if documents reside in a database this may need to be implemented instead of upload from files*/
 import toast from "react-hot-toast";
 
 type UploadResult = { 

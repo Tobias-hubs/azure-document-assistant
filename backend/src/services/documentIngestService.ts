@@ -1,5 +1,3 @@
-// import fs from "fs";
-// import path from "path";
 import { PdfService } from "./pdfService";
 import { VectorStoreAdapter } from "../adapters/vectorStore";
 import { Chunk } from "../models/types";

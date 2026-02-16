@@ -46,6 +46,10 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
   } 
 
    // Cosine similarity-calc
+   /* 
+  - If two sentences are semantically similar, their vectors point in nearly the same direction and value close to 1.
+  - If they are unrelated, the vectors are not pointed in same direction = value close to 0.
+  - If they point in opposite directions (uncommon for embeddings) = value close to -1.  */
    private cosineSimilarity(a: number[], b: number[]): number { 
    
     if (a.length === 0 || b.length === 0 ) return 0; 

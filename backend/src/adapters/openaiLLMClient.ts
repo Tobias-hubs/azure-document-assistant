@@ -26,7 +26,7 @@ async embed(text: string): Promise<number[]> {
 
 async generate(prompt: string): Promise<string> { 
     const result = await this.client.chat.completions.create({
-        model: "gpt-4o-mini", 
+        model: "gpt-4o-mini", // Change to openAi 5 version ? 
         messages: [{ role: "user", content: prompt }],
     }); 
 
