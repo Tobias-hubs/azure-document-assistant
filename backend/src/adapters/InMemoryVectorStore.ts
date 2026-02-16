@@ -44,7 +44,7 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
     return scored.slice(0, Math.min(topK, filtered.length)) 
   .map(s => s.chunk); 
   } 
-
+// TODO Change to PostgreSQL pgvector (that can do Cosine similarity-calc)
    // Cosine similarity-calc
    /* 
   - If two sentences are semantically similar, their vectors point in nearly the same direction and value close to 1.
