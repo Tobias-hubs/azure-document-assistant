@@ -67,7 +67,7 @@ return (
         />
         <button 
         type="button"
-        className="rounded bg-blue-600 px-4 py-3 hover:bg-blue-500"
+        className="rounded bg-blue-600 px-4 py-3 mb-4 hover:bg-blue-500"
         onClick={() => document.getElementById("pdfInput")?.click()}
         >
             Upload PDF
