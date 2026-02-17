@@ -19,7 +19,7 @@ export class RagService {
     // SEARCH 4 - Embed the query into a numerical vector representation (used in similaritySearch) 
     const queryEmbedding = await this.llm.embed(query);
 
-    // SEARCH 5 — Retrieve topK relevant chunks for the given docId
+    // SEARCH 5 — Retrieve topK relevant chunks for the given docId (inMemoryVectorstore)
     //  Retrieve top-K chunks
     const chunks: Chunk[] = await this.store.similaritySearch(queryEmbedding, docId, topK);
     console.log("Retrieved chunks:", chunks.length);

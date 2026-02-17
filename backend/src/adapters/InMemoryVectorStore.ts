@@ -37,17 +37,16 @@ export class InMemoryVectorStore implements VectorStoreAdapter {
       score: this.cosineSimilarity(embedding, chunk.embedding)
     })); 
 
-    // Sort by relevance (highest first) 
+    // Sort by relevance (highest semantic score first) 
     scored.sort((a, b) => b.score - a.score); 
 
     // take topK 
     return scored.slice(0, Math.min(topK, filtered.length)) 
   .map(s => s.chunk); 
   } 
-// TODO Change to PostgreSQL pgvector (that can do Cosine similarity-calc)
    // Cosine similarity-calc
    /* 
-  - If two sentences are semantically similar, their vectors point in nearly the same direction and value close to 1.
+  - If two sentences are semantically similar, their vectors point is in nearly the same direction and value close to 1.
   - If they are unrelated, the vectors are not pointed in same direction = value close to 0.
   - If they point in opposite directions (uncommon for embeddings) = value close to -1.  */
    private cosineSimilarity(a: number[], b: number[]): number { 

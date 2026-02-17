@@ -1,3 +1,4 @@
+// TODO Limmit tokens 
 import { PdfService } from "./pdfService";
 import { VectorStoreAdapter } from "../adapters/vectorStore";
 import { Chunk } from "../models/types";
