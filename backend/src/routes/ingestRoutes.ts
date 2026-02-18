@@ -1,17 +1,17 @@
 import { Router } from "express";
 import { upload } from "../middleware/upload";
-import { IngestController } from "../controllers/ingestController";
-import { DocumentIngestService } from "../services/documentIngestService";
-import { PdfService } from "../services/pdfService";
-import { InMemoryVectorStore } from "../adapters/InMemoryVectorStore";
+import { IngestController } from "../controllers/IngestController";
+import { HostedIngestService } from "../services/HostedIngestService";
 
-export function createIngestRoutes(ingestService: DocumentIngestService) {  
+export function createIngestRoutes(
+    ingestService: HostedIngestService
+) {  
 const router = Router(); 
 
 
 
 const controller = new IngestController(ingestService); 
-//INGEST 3 - Multer catches "file" in route
+
 router.post(
     "/ingest",
     upload.single("file"), 

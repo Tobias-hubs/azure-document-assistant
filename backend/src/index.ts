@@ -1,18 +1,13 @@
 import express from "express";
 import cors from "cors";
-import { SearchController } from "./controllers/searchControllers";
-//import { RagService } from "./services/rag/LocalRagService";
-//import { InMemoryVectorStore } from "./adapters/InMemoryVectorStore";
-// import { MockLLMClient } from "./adapters/mockLLMClient"; // comment out to test ai 
-//import { OpenAILLMClient } from "./adapters/openaiLLMClient" 
-import { Logger } from "./utils/logger";
-import { createIngestRoutes } from "./routes/ingestRoutes";
-import { PdfService } from "./services/pdfService";
-import { DocumentIngestService } from "./services/documentIngestService";
-import path from "path";
 import dotenv from "dotenv"; 
-import OpenAi from "openai"; 
+import OpenAi, { OpenAI } from "openai"; 
+
+import { SearchController } from "./controllers/searchController";
+import { Logger } from "./utils/logger";
 import { HostedRagService } from "./services/rag/HostedRagService"; 
+import { HostedIngestService } from "./services/HostedIngestService";
+import { createIngestRoutes } from "./routes/ingestRoutes";
 
 dotenv.config();
 
@@ -20,35 +15,30 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-//app.use("/api", ingestRoutes);
 
-const openai = new OpenAi({ 
+const openai = new OpenAI({ 
     apiKey: process.env.OPENAI_API_KEY!,
 }); 
 
+const vectorStoreId = process.env.OPENAI_VECTOR_STORE_ID!; 
+if (!vectorStoreId) { 
+    throw new Error("OpenAI vector store id missing"); 
+}
+
 const ragService = new HostedRagService( 
     openai, 
-    process.env.OPENAI_VECTOR_STORE_ID!
+    vectorStoreId
 );
 
+const ingestService = new HostedIngestService( 
+    openai, 
+    vectorStoreId
+);
 
-//const vectorStore = new InMemoryVectorStore();
-// const llmClient = new MockLLMClient();  // TODO comment out to test ai 
-//const llmClient = new OpenAILLMClient(); 
-
-/* const ingestService = new DocumentIngestService( 
-    new PdfService(), 
-    vectorStore, 
-    llmClient
-);  */
-
-// INGEST 2 - Server takes request
 app.use("/api", createIngestRoutes(ingestService));
 
 
 const logger = new Logger();
-
-// const ragService = new RagService(vectorStore, llmClient, logger);
 
 const searchController = new SearchController(ragService);
 
@@ -56,7 +46,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Internal Document Assistant API is running");
 });
 
-// SEARCH 2 - Server recieves search request with query + docId
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
         const { query, docId, userId } = req.body;

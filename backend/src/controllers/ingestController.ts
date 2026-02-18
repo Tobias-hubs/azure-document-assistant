@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { DocumentIngestService } from "../services/documentIngestService";
 import { randomUUID } from "crypto"; 
+import { HostedIngestService } from "../services/HostedIngestService";
 
 export class IngestController { 
     // Dependency Injection
-    constructor(private ingestService: DocumentIngestService) {}
+    constructor(private ingestService: HostedIngestService) {}
 
     // Handler method for POST /api/ingest
     ingest = async (req: Request, res: Response) => { 
@@ -17,13 +17,11 @@ export class IngestController {
 
             const docId = randomUUID(); // Generate Unique ID
 
-// INGEST 4 - Controller receives req.file and forwards the PDF buffer
-            await this.ingestService.ingestBuffer(file.buffer, docId); // (buffer = binary)
+            await this.ingestService.uploadFile(file.buffer, file.originalname, docId); // (buffer = binary)  
 
             res.json({ 
                 status: "ok",
                 docId, 
-                chunksIngested: true, 
                 displayName: file.originalname,
             });
         } catch (err) { 

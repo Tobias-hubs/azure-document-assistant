@@ -13,7 +13,6 @@ type UploadButtonProps = {
 
 export function UploadButton({ onUploadSuccess }: UploadButtonProps) { 
 const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { 
-   //INGEST  1 - User selects a PDF file in browser.
    // <input type="file"> gives a File object. 
     const file = e.target.files?.[0];
     if (!file) return; 

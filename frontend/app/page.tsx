@@ -66,7 +66,6 @@ export default function Home() {
       const BASE_URL = API_URL || "http://localhost:3001";
       console.log("Sending search:", query, docId);
 
-      // SEARCH 1 - User question + docId sent to backend
       const response = await fetch(`${BASE_URL}/api/search`, {
         method: "POST",
         headers: {

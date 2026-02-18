@@ -8,20 +8,31 @@ export class HostedRagService implements RagService {
     private vectorStoreId: string
   ) {}
 
-  async answer(question: string): Promise<Answer> {
+  async answer(question: string, docId: string): Promise<Answer> {
+
     const response = await this.client.responses.create({
-      model: "gpt-4o-mini", // gpt 5? 
+      model: "gpt-4.1-mini", // gpt 5? 
       input: question,
+      
       tools: [
         {
           type: "file_search",
-          vector_store_ids: [this.vectorStoreId],
-        },
+          // TODO VectorStore ID?   vector_store_ids: ["<your_vector_store_id>"],
+          vector_store_ids: [this.vectorStoreId], 
+          max_num_results: 2, // To limit token use and response time
+            filters: { 
+              type: "eq", // "equals"
+              key: "docId",
+              value: docId,
+      },
+
+        }
       ],
+     
     });
 
     let text = "";
-    const sources: any[] = []; // TODO Any is not desirable
+    const sources: Answer["sources"] = []; 
 
     for (const item of response.output ?? []) {
       if (item.type !== "message") continue;
@@ -33,18 +44,20 @@ export class HostedRagService implements RagService {
 
         const citations =
           content.annotations?.filter(
-            (a): a is any => a.type === "file_citation" // TODO Any is not desirable 
+            (a) => a.type === "file_citation" 
           ) ?? [];
 
         for (const c of citations) {
+          if ("filename" in c) {
           sources.push({
-            documentName: c.filename,
+            documentName: c.filename ?? "Unknown",
             page: 0,
             offset: 0,
           });
         }
       }
     }
+  }
 
     return {
       text: text.trim(),

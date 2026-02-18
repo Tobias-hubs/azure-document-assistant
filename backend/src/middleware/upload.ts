@@ -1,5 +1,5 @@
 import multer from "multer"; 
 
-const storage = multer.memoryStorage(); // INGEST store file in RAM 
 
-export const upload = multer ({ storage }); 
+export const upload = multer ({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024},
+ }); 
