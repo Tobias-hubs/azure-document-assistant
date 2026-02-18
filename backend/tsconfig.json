@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    // "types": ["node"],
+    "types": ["node"],
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
