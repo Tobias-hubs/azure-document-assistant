@@ -1,16 +1,18 @@
 import express from "express";
 import cors from "cors";
 import { SearchController } from "./controllers/searchControllers";
-import { RagService } from "./services/ragService";
-import { InMemoryVectorStore } from "./adapters/InMemoryVectorStore";
+//import { RagService } from "./services/rag/LocalRagService";
+//import { InMemoryVectorStore } from "./adapters/InMemoryVectorStore";
 // import { MockLLMClient } from "./adapters/mockLLMClient"; // comment out to test ai 
-import { OpenAILLMClient } from "./adapters/openaiLLMClient" 
+//import { OpenAILLMClient } from "./adapters/openaiLLMClient" 
 import { Logger } from "./utils/logger";
 import { createIngestRoutes } from "./routes/ingestRoutes";
 import { PdfService } from "./services/pdfService";
 import { DocumentIngestService } from "./services/documentIngestService";
 import path from "path";
 import dotenv from "dotenv"; 
+import OpenAi from "openai"; 
+import { HostedRagService } from "./services/rag/HostedRagService"; 
 
 dotenv.config();
 
@@ -20,16 +22,25 @@ app.use(cors());
 app.use(express.json());
 //app.use("/api", ingestRoutes);
 
+const openai = new OpenAi({ 
+    apiKey: process.env.OPENAI_API_KEY!,
+}); 
 
-const vectorStore = new InMemoryVectorStore();
+const ragService = new HostedRagService( 
+    openai, 
+    process.env.OPENAI_VECTOR_STORE_ID!
+);
+
+
+//const vectorStore = new InMemoryVectorStore();
 // const llmClient = new MockLLMClient();  // TODO comment out to test ai 
-const llmClient = new OpenAILLMClient(); 
+//const llmClient = new OpenAILLMClient(); 
 
-const ingestService = new DocumentIngestService( 
+/* const ingestService = new DocumentIngestService( 
     new PdfService(), 
     vectorStore, 
     llmClient
-); 
+);  */
 
 // INGEST 2 - Server takes request
 app.use("/api", createIngestRoutes(ingestService));
@@ -37,7 +48,7 @@ app.use("/api", createIngestRoutes(ingestService));
 
 const logger = new Logger();
 
-const ragService = new RagService(vectorStore, llmClient, logger);
+// const ragService = new RagService(vectorStore, llmClient, logger);
 
 const searchController = new SearchController(ragService);
 

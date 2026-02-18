@@ -1,6 +1,6 @@
-import { Answer, Chunk, SourceRef } from "../models/types";
-import { VectorStoreAdapter } from "../adapters/vectorStore";
-import { LLMClient } from "../adapters/llmClient";
+import { Answer, Chunk, SourceRef } from "../../models/types";
+import { VectorStoreAdapter } from "../../adapters/vectorStore";
+import { LLMClient } from "../../adapters/llmClient";
 
 export class RagService {
   constructor(

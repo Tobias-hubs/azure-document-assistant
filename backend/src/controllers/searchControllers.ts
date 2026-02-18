@@ -1,4 +1,4 @@
-import { RagService } from "../services/ragService";
+import { RagService } from "../services/rag/LocalRagService";
 import { AnswerDTO } from "../models/types";
 
 export class SearchController {
