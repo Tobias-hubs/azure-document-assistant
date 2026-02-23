@@ -18,5 +18,10 @@ router.post(
     controller.ingest
 );
 
+router.delete(
+    "/api/ingest/:docId", 
+    controller.delete);
+
+
 return router; 
 }

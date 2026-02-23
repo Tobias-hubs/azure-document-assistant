@@ -1,4 +1,5 @@
 import OpenAI from "openai"; 
+import { FileDeleteParams } from "openai/resources/vector-stores/files";
 import { Readable } from "stream"; 
 
 export class HostedIngestService { 
@@ -34,5 +35,23 @@ export class HostedIngestService {
                 }, 
             }
         ); 
+        
+
+        return { 
+            fileId: uploaded.id, 
+        };
+        
+    }
+       async deleteFile(fileId: string) { 
+
+            // Remove from vectorstore
+            await this.client.vectorStores.files.delete(
+                fileId, 
+                {vector_store_id: this.vectorStoreId}
+                
+            ); 
+
+            await this.client.files.delete(fileId); 
+        
     }
 }
