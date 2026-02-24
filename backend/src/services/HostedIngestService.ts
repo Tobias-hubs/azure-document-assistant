@@ -44,10 +44,10 @@ export class HostedIngestService {
     }
        async deleteFile(fileId: string) { 
 
-            // Remove from vectorstore
+            // SDK requires FileDeleteParams object with {vector_store_id}: string;
             await this.client.vectorStores.files.delete(
                 fileId, 
-                {vector_store_id: this.vectorStoreId}
+                {vector_store_id: this.vectorStoreId} 
                 
             ); 
 

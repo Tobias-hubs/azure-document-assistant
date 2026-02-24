@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { randomUUID } from "crypto"; 
 import { HostedIngestService } from "../services/HostedIngestService";
 import { documentRepository } from "../repositories/documentRepository";
+import crypto from "crypto";
 
 export class IngestController { 
     // Dependency Injection
@@ -14,6 +15,20 @@ export class IngestController {
 
             if (!file) { 
                 return res.status(400).json({ error: "No PDF uploaded" }); 
+            }
+
+            // Compute content hash for deduplication
+            const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
+
+            // Check for existing document with same content hash
+            const existing = documentRepository.findByHash(hash);
+            if (existing) { 
+                return res.status(200).json({
+                    error: "duplicate",
+                    message: "Document with same content already exists",
+                    docId: existing.id,
+                    displayName: existing.filename,
+                }); 
             }
 
             const docId = randomUUID(); // Generate Unique ID

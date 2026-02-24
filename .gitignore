@@ -5,6 +5,11 @@ frontend/node_modules/
 
 documents/
 
+# SQLite database
+documents.db
+*.sqlite 
+*.sqlite3 
+
 # Logs
 logs
 *.log
