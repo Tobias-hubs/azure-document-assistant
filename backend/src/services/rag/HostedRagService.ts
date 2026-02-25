@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { Answer } from "../../models/types";
 import { RagService } from "./RagService"; 
+import { documentRepository } from "../../repositories/documentRepository";
 
 export class HostedRagService implements RagService {
   constructor(
@@ -10,26 +11,26 @@ export class HostedRagService implements RagService {
 
   async answer(question: string, docId: string): Promise<Answer> {
 
+    const doc = documentRepository.findById(docId);
+    if (!doc) {
+      throw new Error("Document not found in repository: " + docId);
+    }
+
     const response = await this.client.responses.create({
       model: "gpt-4.1-mini", // gpt 5? 
       input: question,
       
-      tools: [
-        {
-          type: "file_search",
-          // TODO VectorStore ID?   vector_store_ids: ["<your_vector_store_id>"],
-          vector_store_ids: [this.vectorStoreId], 
-          max_num_results: 2, // To limit token use and response time
-            filters: { 
-              type: "eq", // "equals"
-              key: "docId",
-              value: docId,
-      },
-
-        }
-      ],
      
-    });
+  tools: [
+    {
+      type: "file_search",
+      vector_store_ids: [this.vectorStoreId],
+      max_num_results: 5
+    }
+  ],
+
+});
+
 
     let text = "";
     const sources: Answer["sources"] = []; 

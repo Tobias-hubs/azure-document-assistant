@@ -11,7 +11,7 @@ export class IngestController {
     // Handler method for POST /api/ingest
     ingest = async (req: Request, res: Response) => { 
         try { 
-            const file = req.file; // PDF-buffer 
+            const file = req.file; // PDF-buffer ( From multer)
 
             if (!file) { 
                 return res.status(400).json({ error: "No PDF uploaded" }); 
@@ -23,7 +23,8 @@ export class IngestController {
             // Check for existing document with same content hash
             const existing = documentRepository.findByHash(hash);
             if (existing) { 
-                return res.status(200).json({
+                // TODO display in frontend? 
+                return res.status(409).json({ 
                     error: "duplicate",
                     message: "Document with same content already exists",
                     docId: existing.id,
@@ -31,21 +32,24 @@ export class IngestController {
                 }); 
             }
 
-            const docId = randomUUID(); // Generate Unique ID
+            const docId = randomUUID(); // NOTE Generate Unique ID (Separate from openai fileId)
 
             const result = await this.ingestService.uploadFile(
                 file.buffer,
                 file.originalname,
                 docId); // (buffer = binary)  
 
-                // Save in SQLite
+                // Save metadata in SQLite (local)
                 documentRepository.create( 
                     docId, 
-                    result.fileId, 
+                    result.fileId, // OpenAI file ID
                     process.env.OPENAI_VECTOR_STORE_ID!,
-                    file.originalname
+                    file.originalname, 
+                    result.vectorStoreFileId,
+                    hash 
                 ); 
 
+                // Answer to frontend
             res.json({ 
                 status: "ok",
                 docId, 
@@ -73,7 +77,10 @@ export class IngestController {
 
             }
 
-            await this.ingestService.deleteFile(record.file_id); 
+            await this.ingestService.deleteFile(
+                record.file_id, 
+                record.vector_store_file_id // SQL 
+            ); 
 
             documentRepository.delete(docId!); 
 

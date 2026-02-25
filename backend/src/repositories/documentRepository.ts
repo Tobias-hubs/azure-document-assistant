@@ -4,7 +4,7 @@ export interface DocumentRecord  {
     id: string; 
     file_id: string; 
     vector_store_id: string; 
-    vector_stor_file_id?: string; // For deletion in vector store, not in files table
+    vector_store_file_id: string; // For deletion in vector store, not in files table
     content_hash?: string; // For deduplication based on file content hash (optional)
     is_deleted?: number; // Soft delete flag (0 = active, 1 = deleted)
     deleted_at?: string;  // Timestamp of deletion (optional)

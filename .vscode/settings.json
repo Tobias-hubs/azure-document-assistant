@@ -8,7 +8,9 @@
         "EMBEDDING",
         "PROMPT",
         "INGEST", 
-        "SEARCH"
+        "SEARCH", 
+        "NOTE"
+    
     ],
     "todo-tree.tree.showBadges": true,
     "todo-tree.highlights.defaultHighlight": {
@@ -39,5 +41,6 @@
             "foreground": "#000000",
             "background": "#53d121"
         }
+        
     }
 }

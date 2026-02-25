@@ -1,5 +1,4 @@
 import OpenAI from "openai"; 
-import { FileDeleteParams } from "openai/resources/vector-stores/files";
 import { Readable } from "stream"; 
 
 export class HostedIngestService { 
@@ -24,11 +23,17 @@ export class HostedIngestService {
             purpose: "assistants",
         }); 
 
+        const vsFile = await this.client.vectorStores.files.create(
+            this.vectorStoreId, 
+              { file_id: uploaded.id }
+        );
+
 
         await this.client.vectorStores.files.create( 
             this.vectorStoreId, 
             { 
                 file_id: uploaded.id, 
+                // To be able to filter / search metadata later
                 attributes: { 
                     docId: docId, 
                     filename: filename,
@@ -39,15 +44,20 @@ export class HostedIngestService {
 
         return { 
             fileId: uploaded.id, 
+            vectorStoreFileId: vsFile.id,
         };
         
     }
-       async deleteFile(fileId: string) { 
+    // fileId = openAi file reference, vectorStoreFileId = reference in vector store (for deletion)
+       async deleteFile(fileId: string, vectorStoreFileId: string) { 
 
             // SDK requires FileDeleteParams object with {vector_store_id}: string;
             await this.client.vectorStores.files.delete(
-                fileId, 
-                {vector_store_id: this.vectorStoreId} 
+               vectorStoreFileId, 
+               { vector_store_id: this.vectorStoreId } // NOTE This was troublesome due to SDK version changes!
+               
+                // fileId, 
+                // {vector_store_id: this.vectorStoreId} 
                 
             ); 
 
