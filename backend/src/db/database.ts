@@ -15,6 +15,18 @@ db.exec(`
     );
     `);
 
+    db.exec(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+    id TEXT PRIMARY KEY,
+    user_name TEXT NOT NULL,
+    doc_id TEXT NOT NULL, 
+    sender TEXT NOT NULL, 
+    text TEXT NOT NULL, 
+    created_at INTEGER NOT NULL 
+    ); 
+    CREATE INDEX IF NOT EXISTS idx_chat_user_doc ON chat_messages(user_name, doc_id);
+    `);
+
     function addColumnIfMissing(table: string, column: string, type: string) {
         const row = db.prepare(`PRAGMA table_info(${table})`).all(); 
         const existingColumn = row.find((c: any) => c.name === column);

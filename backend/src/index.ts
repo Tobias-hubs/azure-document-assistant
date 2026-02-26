@@ -8,6 +8,7 @@ import { Logger } from "./utils/logger";
 import { HostedRagService } from "./services/rag/HostedRagService"; 
 import { HostedIngestService } from "./services/HostedIngestService";
 import { createIngestRoutes } from "./routes/ingestRoutes";
+import { db } from "./db/database";
 
 dotenv.config();
 
@@ -44,6 +45,32 @@ const searchController = new SearchController(ragService);
 
 app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Internal Document Assistant API is running");
+});
+
+app.get("/api/chat/history", (req, res ) => {
+    const { userName, docId } = req.query;
+    const rows = db.prepare(`
+        SELECT sender, text FROM chat_messages
+        WHERE user_name = ? AND doc_id = ?
+        ORDER BY created_at ASC
+    `).all(userName, docId);
+    res.json(rows);
+});
+
+app.post("/api/chat", (req, res) => {
+    const { username, docId, sender, text } = req.body;
+    db.prepare(` 
+        INSERT INTO chat_messages (id, user_name, doc_id, sender, text, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `).run(
+        crypto.randomUUID(),
+        username,
+        docId,
+        sender,
+        text,
+        Date.now()
+    );
+    res.json({ ok: true });
 });
 
 app.post("/api/search", async (req: express.Request, res: express.Response) => {

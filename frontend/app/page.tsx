@@ -8,7 +8,6 @@ import { Message } from "./components/types/chat";
 import { ChatFeed } from "./components/chat/ChatFeed";
 import { ChatInput } from "./components/chat/ChatInput";
 import { SourcePanel } from "./components/chat/SourcesPanel"; 
-import { PdfViewer } from "./components/pdf/PdfViewer";
 import { PdfChip } from "./components/pdf/PdfChip";
 
 
@@ -22,6 +21,32 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activeDoc, setActiveDoc] = useState<ActiveDoc | null>(null);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+
+  async function loadChat(username: string, docId: string) { 
+    const res = await fetch( 
+      `${API_URL}/api/chat/history?userName=${username}&docId=${docId}`
+    );
+    if (!res.ok) return; 
+    const rows = await res.json();
+    setMessages(rows); 
+  }; 
+
+  async function saveMessage(username: string, docId: string, sender: "user" | "ai", text: string) { 
+    await fetch(`${API_URL}/api/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        docId,
+        sender,
+        text,
+      }),
+    });
+  };
+
+
 
   type ActiveDoc = { 
     docId: string; 
@@ -48,6 +73,12 @@ export default function Home() {
     setUsername(localStorage.getItem("username") || "");
   }, []);
 
+  useEffect(() => {
+    if (username && docId) {
+      loadChat(username, docId);
+    }
+  }, [username, docId]);
+
   const askBackend = async () => {
     if (!query || !docId) {
       setMessages((prev) => [
@@ -56,6 +87,8 @@ export default function Home() {
       ]);
       return;
     }
+
+    saveMessage(username, docId, "user", query); // Save user message to backend
 
     setMessages((prev) => [...prev, { sender: "user", text: query }]);
     setQuery("");
@@ -85,6 +118,7 @@ export default function Home() {
 
       // Ai answer
       setMessages((prev) => [...prev, { sender: "ai", text: data.answer }]);
+      saveMessage(username, docId, "ai", data.answer); // Save AI answer to backend
       setSources(data.sources);
     } catch (error) {
       console.error("Error fetching from backend:", error);
@@ -104,7 +138,9 @@ export default function Home() {
         {/* Header */}
         <div className="shrink-0 border-b border-zinc-700 p-6">
           <h1 className="text-2xl font-semibold">
-            Internal Document Assistant
+            <span className="text-[#d50e1b]">Internal</span>{" "}
+            <span className="text-[#f7b910]">Document</span>{" "}
+            <span className="text-[#68ae3f]">Assistant</span>
           </h1>
           <p className="text-sm text-zinc-400">Inloggad som: {username}</p>
         </div>
@@ -141,7 +177,7 @@ export default function Home() {
   />
           <div className="mt-3 flex justify-end">
             <UploadButton
-            onUploadSuccess={(data) => { 
+            onUploadSuccess={async (data) => { 
               setDocId(data.docId); 
               setActiveDoc({
                 docId: data.docId, 
