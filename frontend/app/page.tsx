@@ -21,6 +21,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activeDoc, setActiveDoc] = useState<ActiveDoc | null>(null);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [vectorStoreId, setVectorStoreId] = useState<string | null>(null);
+  const [vectorStores, setVectorStores] = useState<{id: string, name: string}[]>([]);
 
   async function loadChat(username: string, docId: string) { 
     const res = await fetch( 
@@ -63,6 +65,13 @@ export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
+  fetch(`${API_URL}/api/vector-stores`)
+    .then(r => r.json())
+    .then(setVectorStores)
+    .catch(console.error);
+}, []);
+
+  useEffect(() => {
     const loggedIn = localStorage.getItem("loggedIn");
     if (!loggedIn) {
       router.push("/login");
@@ -74,21 +83,31 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const saved = localStorage.getItem("vectorStoreId");
+    if (saved) setVectorStoreId(saved);
+  } , []);
+
+
+  useEffect(() => {
     if (username && docId) {
       loadChat(username, docId);
     }
   }, [username, docId]);
 
   const askBackend = async () => {
-    if (!query || !docId) {
+    if (!query) return; 
+
+    if (!vectorStoreId && !docId) { 
       setMessages((prev) => [
         ...prev,
-        { sender: "ai", text: "Ladda upp ett dokument innan du ställer en fråga." }, // TODO Should not be a AI answer - instead a text prompt
+        { sender: "ai", text: "Välj en kunskapsbas först" }, // TODO Should not be a AI answer - instead a text prompt
       ]);
       return;
     }
 
-    saveMessage(username, docId, "user", query); // Save user message to backend
+    if (username && docId) {
+      await saveMessage(username, docId, "user", query); // Save user message to backend
+    }
 
     setMessages((prev) => [...prev, { sender: "user", text: query }]);
     setQuery("");
@@ -99,15 +118,16 @@ export default function Home() {
       const BASE_URL = API_URL || "http://localhost:3001";
       console.log("Sending search:", query, docId);
 
+      const body: any = { query };
+       if (docId) body.docId = docId;               
+        else if (vectorStoreId) body.vectorStoreId = vectorStoreId;
+
       const response = await fetch(`${BASE_URL}/api/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          query: query,
-          docId: docId,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -118,7 +138,10 @@ export default function Home() {
 
       // Ai answer
       setMessages((prev) => [...prev, { sender: "ai", text: data.answer }]);
-      saveMessage(username, docId, "ai", data.answer); // Save AI answer to backend
+      if (username && docId) {
+        await saveMessage(username, docId, "ai", data.answer);// Save AI answer to backend
+       } 
+      // saveMessage(username, docId, "ai", data.answer); // Save AI answer to backend
       setSources(data.sources);
     } catch (error) {
       console.error("Error fetching from backend:", error);
@@ -136,13 +159,35 @@ export default function Home() {
     <div className="h-screen bg-zinc-900 text-zinc-100 flex justify-center">
       <div className="w-full max-w-4xl flex flex-col h-full">
         {/* Header */}
-        <div className="shrink-0 border-b border-zinc-700 p-6">
+        <div className="shrink-0 border-b border-zinc-700 p-6 relative">
           <h1 className="text-2xl font-semibold">
             <span className="text-[#d50e1b]">Internal</span>{" "}
             <span className="text-[#f7b910]">Document</span>{" "}
             <span className="text-[#68ae3f]">Assistant</span>
           </h1>
           <p className="text-sm text-zinc-400">Inloggad som: {username}</p>
+
+          {/* Dropdown for vectorstore */}
+  <div className="absolute right-6 top-12  flex items-center space-x-2">
+    <label className="text-sm text-zinc-200 mr-2">Kunskapsbas:</label>
+    <select
+      value={vectorStoreId || ""}
+      onChange={(e) => {
+        const id = e.target.value;
+        setVectorStoreId(id);
+        setDocId(null); // Clear docId when vector store changes
+        localStorage.setItem("vectorStoreId", id);
+      }}
+      className="bg-zinc-800 text-zinc-100 p-1 rounded"
+    >
+      <option value="" disabled>-- Ingen --</option>
+      {vectorStores.map(store => (
+        <option key={store.id} value={store.id}>{store.name}</option>
+      ))}
+    </select>
+  </div>
+
+
         </div>
 
         {/* Chat feed */}
@@ -183,6 +228,10 @@ export default function Home() {
                 docId: data.docId, 
                 displayName: data.displayName,
               });
+              if (data.vectorStoreId) {
+                setVectorStoreId(data.vectorStoreId);
+                localStorage.setItem("vectorStoreId", data.vectorStoreId);
+              } 
             }}
             />
           </div>

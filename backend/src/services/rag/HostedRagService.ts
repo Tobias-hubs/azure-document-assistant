@@ -6,16 +6,24 @@ import { documentRepository } from "../../repositories/documentRepository";
 export class HostedRagService implements RagService {
   constructor(
     private client: OpenAI,
-    private vectorStoreId: string
+    private defaultVectorStoreId: string
   ) {}
 
-  async answer(question: string, docId: string): Promise<Answer> {
+  async answer(question: string, docId?: string, vectorStoreId?: string): Promise<Answer> {
 
+    let vectorId = vectorStoreId || this.defaultVectorStoreId;
+
+    if (docId) {
     const doc = documentRepository.findById(docId);
     if (!doc) {
       throw new Error("Document not found in repository: " + docId);
+      return { text: "Dokument inte hittat", sources: [] }; 
+    } else if (vectorStoreId) {
+      return { text: "vectorStore result", sources: [] };
+    } else { 
+      throw new Error("Vector store ID or docid needed for search");
     }
-
+  }
     const response = await this.client.responses.create({
       model: "gpt-4.1-mini", // gpt 5? 
       input: question,
@@ -24,7 +32,7 @@ export class HostedRagService implements RagService {
   tools: [
     {
       type: "file_search",
-      vector_store_ids: [this.vectorStoreId],
+      vector_store_ids: [vectorId],
       max_num_results: 5
     }
   ],

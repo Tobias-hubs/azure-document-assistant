@@ -5,6 +5,7 @@ import { useState } from "react";
 type UploadResult = { 
     docId: string; 
     displayName: string; 
+    vectorStoreId?: string; // Optional, 
 }; 
 
 type ApiDuplicateResponse = { 
@@ -70,7 +71,7 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 </button>
 
                 <button
-                className="px-3 py-1 rounded border border-gray-300 text-red-200 "
+                className="px-3 py-1 rounded border text-red-500 "
                 onClick={() => {
                     // Do nothing
                     toast.dismiss(t.id); 

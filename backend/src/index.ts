@@ -21,20 +21,35 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY!,
 }); 
 
-const vectorStoreId = process.env.OPENAI_VECTOR_STORE_ID!; 
-if (!vectorStoreId) { 
-    throw new Error("OpenAI vector store id missing"); 
+app.get("/api/vector-stores", async (req, res) => {
+    try { 
+const stores = [
+     { id: process.env.OPENAI_VECTOR_STORE_ID!, name: "Default knowledge base" }, ];
+res.json(stores);
+    } catch (error) {
+        console.error("Error fetching vector stores:", error);
+        res.status(500).json({ error: "Internt serverfel" });
+    }
+    });
+
+    const defaultVectorStoreId = process.env.OPENAI_VECTOR_STORE_ID!;
+if (!defaultVectorStoreId) {
+    throw new Error("OpenAI vector store id missing");
 }
 
-const ragService = new HostedRagService( 
-    openai, 
-    vectorStoreId
-);
+const ragService = new HostedRagService(openai, defaultVectorStoreId);
+const ingestService = new HostedIngestService(openai, defaultVectorStoreId);
 
-const ingestService = new HostedIngestService( 
-    openai, 
-    vectorStoreId
-);
+
+// const ragService = new HostedRagService( 
+//     openai, 
+//     vectorStoreId
+// );
+
+// const ingestService = new HostedIngestService( 
+//     openai, 
+//     vectorStoreId
+// );
 
 app.use("/api", createIngestRoutes(ingestService));
 
@@ -75,13 +90,14 @@ app.post("/api/chat", (req, res) => {
 
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
-        const { query, docId, userId } = req.body;
+        const { query, docId, vectorStoreId, userId } = req.body;
 
-        if (!query || !docId) {
-            return res.status(400).json({ error: "query och docId krävs" });
+        if (!query || (!docId && !vectorStoreId)) {
+            return res.status(400).json({ error: "query och docId eller vectorStoreId krävs" });
         }
 
-        const result = await searchController.search(query, docId, userId);
+    
+       const result = await searchController.search(query, docId, vectorStoreId, userId);
         res.json(result);
     } catch (error) {
         console.error("Search error:", error);
