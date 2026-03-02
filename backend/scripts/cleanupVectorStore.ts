@@ -21,7 +21,7 @@ async function main() {
 
   const client = new OpenAI({ apiKey });
 
-  console.log("🧹 Cleaning up Vector Store:", vsId);
+  console.log("Cleaning up Vector Store:", vsId);
   console.log("--------------------------------------------------");
 
   // 1. Hämta alla filer i vector store
@@ -48,9 +48,9 @@ async function main() {
         associationId,
         { vector_store_id: vsId }
       );
-      console.log("✓ Deleted association:", associationId);
+      console.log("Deleted association:", associationId);
     } catch (err: any) {
-      console.error("❌ Failed to delete association:", associationId, err.message);
+      console.error("Failed to delete association:", associationId, err.message);
     }
 
     // 3. Ta bort global fil
@@ -60,7 +60,7 @@ async function main() {
       await client.files.delete(globalFileId);
       console.log("✓ Deleted file:", globalFileId);
     } catch (err: any) {
-      console.error("❌ Failed to delete file:", globalFileId, err.message);
+      console.error("Failed to delete file:", globalFileId, err.message);
     }
   }
 
@@ -69,5 +69,5 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error("❌ Cleanup error:", err);
+  console.error("Cleanup error:", err);
 });

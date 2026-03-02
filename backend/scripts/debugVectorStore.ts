@@ -20,19 +20,19 @@ async function main() {
 
   const vsId = process.env.OPENAI_VECTOR_STORE_ID;
 
-  console.log("🔎 Debugging Vector Store:", vsId);
+  console.log("Debugging Vector Store:", vsId);
   console.log("--------------------------------------------------");
 
-  // 1️⃣ Hämta vector store info
+  // Hämta vector store info
   const store = await client.vectorStores.retrieve(vsId);
-  console.log("📦 Store info:");
+  console.log("Store info:");
   console.dir(store, { depth: null });
   console.log("--------------------------------------------------");
 
-  // 2️⃣ Lista filer
+  // Lista filer
   const files = await client.vectorStores.files.list(vsId);
 
-  console.log(`📄 Files in store (${files.data.length}):`);
+  console.log(`Files in store (${files.data.length}):`);
 
   for (const file of files.data) {
     console.log("--------------------------------------------------");
@@ -44,12 +44,12 @@ async function main() {
   console.log("--------------------------------------------------");
 
   if (files.data.length === 0) {
-    console.log("⚠️ No files in vector store.");
+    console.log("No files in vector store.");
     return;
   }
 
-  // 3️⃣ Test search
-  console.log("🧠 Testing search...");
+  // Test search
+  console.log("Testing search...");
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: "Vad handlar dokumentet om?",
@@ -62,7 +62,7 @@ async function main() {
   });
 
   console.log("--------------------------------------------------");
-  console.log("💬 Search response:");
+  console.log("Search response:");
 
   for (const item of response.output ?? []) {
     if (item.type !== "message") continue;
@@ -83,10 +83,10 @@ async function main() {
   }
 
   console.log("--------------------------------------------------");
-  console.log("✅ Debug complete.");
+  console.log("Debug complete.");
 }
 
 main().catch(err => {
-  console.error("❌ Error during debug:");
+  console.error("Error during debug:");
   console.error(err);
 });

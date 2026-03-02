@@ -3,12 +3,11 @@ import "dotenv/config";
 import OpenAI from "openai";
 import { db } from "../src/db/database";
 
-// Importera din typ
 type DocumentRecord = {
   id: string;
   file_id: string;
   vector_store_id: string;
-  vector_store_file_id: string; // viktigt: required, rättstavat
+  vector_store_file_id: string; 
   content_hash?: string;
   is_deleted?: number;
   deleted_at?: string;
@@ -25,11 +24,9 @@ async function main() {
 
   const client = new OpenAI({ apiKey });
 
-  console.log("🔎 Reading vector store:", vsId);
+  console.log("Reading vector store:", vsId);
   const list = await client.vectorStores.files.list(vsId);
 
-  // I SDK v6.17.0 kan .list() returnera objekt där id är assoc-id eller file-id.
-  // Vi använder SET av alla "id" vi får tillbaka som “live keys”.
   const liveIds = new Set(list.data.map((f: any) => f.id));
 
   console.log(`Live entries in VS: ${liveIds.size}`);
@@ -41,7 +38,7 @@ async function main() {
   for (const doc of docs) {
     // Om VS är tom kommer liveIds vara tom → alla docs blir orphan
     if (!liveIds.has(doc.vector_store_file_id)) {
-      console.log("🗑️  Removing orphan DB row:", {
+      console.log(" Removing orphan DB row:", {
         docId: doc.id,
         vsFileId: doc.vector_store_file_id,
         fileId: doc.file_id,
@@ -51,10 +48,10 @@ async function main() {
     }
   }
 
-  console.log(`✨ SQLite cleanup complete. Removed ${removed} rows.`);
+  console.log(`SQLite cleanup complete. Removed ${removed} rows.`);
 }
 
 main().catch((err) => {
-  console.error("❌ Cleanup error:", err);
+  console.error("Cleanup error:", err);
   process.exit(1);
 });
