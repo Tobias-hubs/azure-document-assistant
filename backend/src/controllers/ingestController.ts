@@ -23,7 +23,6 @@ export class IngestController {
             // Check for existing document with same content hash
             const existing = documentRepository.findByHash(hash);
             if (existing) { 
-                // TODO display in frontend? 
                 return res.status(409).json({ 
                     error: "duplicate",
                     message: "Document with same content already exists",
