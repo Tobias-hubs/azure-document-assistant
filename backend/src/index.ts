@@ -64,6 +64,9 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 app.get("/api/chat/history", (req, res ) => {
     const { userName, docId } = req.query;
+    if (!userName || !docId) {
+        return res.status(400).json({ error: "userName och docId krävs" });
+    }
     const rows = db.prepare(`
         SELECT sender, text FROM chat_messages
         WHERE user_name = ? AND doc_id = ?
