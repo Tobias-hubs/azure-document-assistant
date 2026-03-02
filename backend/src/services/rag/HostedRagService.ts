@@ -44,6 +44,7 @@ export class HostedRagService implements RagService {
           max_num_results: 5
         },
       ],
+      include: ["file_search_call.results"], // REFACTOR This makes for loop for sources redundant or can be simplified? 
     });
 
    } else {
@@ -61,10 +62,11 @@ export class HostedRagService implements RagService {
       max_num_results: 5
     },
   ],
+  include: ["file_search_call.results"],
 
 });
 }
-
+// REFACTOR 
     for (const item of response.output ?? []) {
       if (item.type !== "message") continue;
 
