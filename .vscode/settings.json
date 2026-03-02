@@ -3,13 +3,14 @@
         "TODO",
         "FIX",
         "REFACTOR",
-        "OPTIMIZE",
+        "BUGFIX",
         "RAG",
         "EMBEDDING",
         "PROMPT",
         "INGEST", 
         "SEARCH", 
-        "NOTE"
+        "NOTE", 
+        "BUG"
     
     ],
     "todo-tree.tree.showBadges": true,
@@ -29,7 +30,7 @@
             "foreground": "#ffffff",
             "background": "#6f42c1"
         },
-        "OPTIMIZE": {
+        "BUGFIX": {
             "foreground": "#ffffff",
             "background": "#28a745"
         },
@@ -41,6 +42,10 @@
             "foreground": "#000000",
             "background": "#53d121"
         }
-        
+         ,
+        "BUG": {
+            "foreground": "#ffffff",
+            "background": "#d73a49"
+        }
     }
 }
