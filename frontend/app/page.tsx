@@ -160,12 +160,26 @@ export default function Home() {
       <div className="w-full max-w-4xl flex flex-col h-full">
         {/* Header */}
         <div className="shrink-0 border-b border-zinc-700 p-6 relative">
-          <h1 className="text-2xl font-semibold">
-            <span className="text-[#d50e1b]">Internal</span>{" "}
-            <span className="text-[#f7b910]">Document</span>{" "}
-            <span className="text-[#68ae3f]">Assistant</span>
-          </h1>
-          <p className="text-sm text-zinc-400">Inloggad som: {username}</p>
+  <h1 className="text-2xl font-semibold flex gap-2">
+    <span className="text">Internal</span>
+    <span className="text">Document</span>
+    <span className="text">Assistant</span>
+  </h1>
+
+  {/* style logo */}
+  <div className="flex gap-3 mt-0 -ml-4">
+    <div className="w-3 h-3 rounded-full bg-white"></div>
+    <div className="w-3 h-3 rounded-full bg-[#d50e1b]"></div>
+    <div className="w-3 h-3 rounded-full bg-[#f7b910]"></div>
+    <div className="w-3 h-3 rounded-full bg-[#68ae3f]"></div>
+    <div className="w-3 h-3 rounded-full bg-white"></div>
+    <div className="w-3 h-3 rounded-full bg-white"></div>
+    <div className="w-3 h-3 rounded-full bg-white"></div>
+  </div>
+
+  <p className="text-sm text-zinc-400 mt-3">
+    Inloggad som: {username}
+  </p>
 
           {/* Dropdown for vectorstore */}
   <div className="absolute right-6 top-12  flex items-center space-x-2">
