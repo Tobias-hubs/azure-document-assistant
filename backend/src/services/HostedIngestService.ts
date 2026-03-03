@@ -25,28 +25,42 @@ export class HostedIngestService {
 
         const vsFile = await this.client.vectorStores.files.create(
             this.vectorStoreId, 
-              { file_id: uploaded.id }
-        );
+              { file_id: uploaded.id, 
 
-
-        await this.client.vectorStores.files.create( 
-            this.vectorStoreId, 
-            { 
-                file_id: uploaded.id, 
-                // To be able to filter / search metadata later
                 attributes: { 
                     docId: docId, 
                     filename: filename,
-                }, 
-            }
-        ); 
+                 }
+               } 
+        );
         
+        // Polling for file processing completion (vector store ingestion)
+        await this.pollFileReady(vsFile.id);
 
         return { 
             fileId: uploaded.id, 
             vectorStoreFileId: vsFile.id,
-        };
-        
+        }; 
+    }
+
+    private async pollFileReady(vectorStoreFileId: string, interval = 3000, timeout = 60000) { 
+        const start = Date.now();
+        while (true) { 
+            const statusResponse = await this.client.vectorStores.files.retrieve(
+                vectorStoreFileId, 
+                { vector_store_id: this.vectorStoreId }
+            );
+
+            if (statusResponse.status === "completed") { 
+                return; 
+            }
+            
+            if (Date.now() - start > timeout) { 
+                throw new Error("File processing timed out"); 
+            }
+
+            await new Promise((res) => setTimeout(res, interval));
+        }
     }
     // fileId = openAi file reference, vectorStoreFileId = reference in vector store (for deletion)
        async deleteFile(fileId: string, vectorStoreFileId: string) { 
