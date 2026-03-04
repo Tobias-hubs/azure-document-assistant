@@ -18,7 +18,7 @@ const client = new OpenAI({
 
 
   const vs = await client.vectorStores.create({
-    name: "my-rag-store", // NOTE Change to name of choice
+    name: "vector-store", // NOTE Change to name of choice
   });
   
   console.log("Vector Store Created!"); 

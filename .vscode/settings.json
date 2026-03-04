@@ -10,7 +10,8 @@
         "INGEST", 
         "SEARCH", 
         "NOTE", 
-        "BUG"
+        "BUG", 
+        "TEST"
     
     ],
     "todo-tree.tree.showBadges": true,
@@ -44,6 +45,10 @@
         }
          ,
         "BUG": {
+            "foreground": "#ffffff",
+            "background": "#d73a49"
+        } ,
+        "TEST": {
             "foreground": "#ffffff",
             "background": "#d73a49"
         }

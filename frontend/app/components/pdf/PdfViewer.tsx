@@ -1,6 +1,6 @@
 
 type Props = { 
-    pdfUrl: string | null; // TODO only Url?
+    pdfUrl: string | null; 
 };
 
 export function PdfViewer({ pdfUrl }: Props) { 
@@ -31,7 +31,7 @@ export function PdfViewer({ pdfUrl }: Props) {
     // {/*PDF below chat */}
 
     //    {/* <div className="bg-zinc-800 rounded shadow overflow-hidden">
-    //   {pdfUrl ? (         // TODO PDF ingestion / PDF view
+    //   {pdfUrl ? (        
     //     <iframe
     //       src={`${pdfUrl}#toolbar=0`} // Temporary solution
     //       className="w-full h-full"
