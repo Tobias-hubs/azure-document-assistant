@@ -4,6 +4,8 @@ import { HostedIngestService } from "../services/HostedIngestService";
 import { documentRepository } from "../repositories/documentRepository";
 import crypto from "crypto";
 
+// TODO Add batch ingest method for uploading multiple files 
+
 export class IngestController { 
     // Dependency Injection
     constructor(private ingestService: HostedIngestService) {}
