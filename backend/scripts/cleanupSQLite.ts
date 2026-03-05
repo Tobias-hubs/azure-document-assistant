@@ -36,14 +36,21 @@ async function main() {
 
   let removed = 0;
   for (const doc of docs) {
-    // Om VS är tom kommer liveIds vara tom → alla docs blir orphan
     if (!liveIds.has(doc.vector_store_file_id)) {
-      console.log(" Removing orphan DB row:", {
+      console.log(" Removing orphan DB row:", {                 
         docId: doc.id,
         vsFileId: doc.vector_store_file_id,
         fileId: doc.file_id,
-      });
-      db.prepare("DELETE FROM documents WHERE id = ?").run(doc.id);
+      });   
+      
+      // Delete chat_messages  // NOTE VACUUM;is needed to actually free space after deletion
+      const cutoff = Date.now() - 20 * 24 * 60 * 60 * 1000; // 20 days in ms
+      db.prepare(`
+        DELETE FROM chat_messages 
+        WHERE created_at < ?
+      `).run(cutoff);     
+
+      db.prepare("DELETE FROM documents WHERE id = ?").run(doc.id); 
       removed++;
     }
   }
