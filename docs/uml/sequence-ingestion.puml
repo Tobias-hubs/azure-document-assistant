@@ -1,32 +1,48 @@
-@startuml ingestion
+@startuml
+title INGEST PIPE - PDF Upload Flow
 
-actor Operator
-participant IngestionUI
-participant DocumentIngestController
-participant PdfService
-participant DocumentIngestService
-participant LLMClient
-participant VectorStoreAdapter
-participant Logger
+actor User
+participant "UploadButton\n(FRONTEND)" as FE
+participant "POST /api/ingest\nExpress Route" as Route
+participant "Multer\nMiddleware" as Multer
+participant "IngestController" as Controller
+participant "HostedIngestService" as IngestService
+database "document.db\n(SQLite)" as DB
+participant "OpenAI Files" as Files
+participant "OpenAI VectorStore" as VS
 
-Operator -> IngestionUI: Upload PDF
-IngestionUI -> DocumentIngestController: ingest(fileBuffer, docId)
+User -> FE: Select PDF
+FE -> Route: POST /api/ingest (multipart/form-data)
+Route -> Multer: Parse form-data\nExtract req.file
+Multer --> Route: req.file = { buffer, originalname }
 
-DocumentIngestController -> PdfService: extractText(fileBuffer)
-PdfService --> DocumentIngestController: rawText
+Route -> Controller: ingest(req)
+Controller -> Controller: Compute SHA256(file.buffer)
+Controller -> DB: findByHash(hash)
+DB --> Controller: existing or null
 
-DocumentIngestController -> DocumentIngestService: splitIntoChunks(rawText)
-DocumentIngestService --> DocumentIngestController: chunks
+alt Duplicate found
+    Controller -> FE: 409 Duplicate\n{docId, displayName}
+    return
+end
 
-DocumentIngestController -> LLMClient: embed(chunks.text)
-LLMClient --> DocumentIngestController: embeddings
+Controller -> Controller: docId = randomUUID()
 
-DocumentIngestController -> VectorStoreAdapter: upsert(docId, chunks + embeddings)
-VectorStoreAdapter --> DocumentIngestController: ack
+Controller -> IngestService: uploadFile(buffer, filename, docId)
 
-DocumentIngestController -> Logger: logIngestion(docId, "OK")
-Logger --> DocumentIngestController: logged
+IngestService -> Files: files.create(file)
+Files --> IngestService: fileId
 
-DocumentIngestController --> IngestionUI: ingestionStatus
+IngestService -> VS: vectorStores.files.create(\nfile_id=fileId,\nattributes={docId,filename})
+VS --> IngestService: vectorStoreFileId
+
+IngestService -> VS: Poll until status=completed
+
+IngestService --> Controller: {fileId, vectorStoreFileId}
+
+Controller -> DB: INSERT document record\n(id, fileId, vectorStoreId,\nfilename, vectorStoreFileId, hash)
+DB --> Controller: OK
+
+Controller --> FE: {status:"ok", docId, displayName}
 
 @enduml

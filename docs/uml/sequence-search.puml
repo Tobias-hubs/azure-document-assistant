@@ -1,23 +1,48 @@
-@startuml search
-actor User
-participant SearchUI
-participant SearchController
-participant RagService
-participant LLMClient
-participant VectorStoreAdapter
-participant Logger
+@startuml
+title SEARCH PIPE - Retrieval-Augmented Generation Flow
 
-User -> SearchUI: Enter query
-SearchUI -> SearchController: search(query, userId)
-SearchController -> RagService: answer(query, userId)
-RagService -> LLMClient: embed(query)
-LLMClient --> RagService: queryEmbedding
-RagService -> VectorStoreAdapter: similaritySearch(queryEmbedding, topK)
-VectorStoreAdapter --> RagService: chunks
-RagService -> RagService: composePrompt(query, chunks)
-RagService -> LLMClient: generate(prompt)
-LLMClient --> RagService: answerText
-RagService -> Logger: logSearch(userId, query, sources, latencyMs)
-RagService --> SearchController: Answer
-SearchController --> SearchUI: AnswerDTO
+actor User
+participant "page.tsx\naskBackend()" as FE
+participant "POST /api/search\nExpress Route" as Route
+participant "SearchController" as Controller
+participant "documentRepository\n(SQLite)" as DB
+participant "HostedRagService" as Rag
+participant "OpenAI Responses API" as OA
+participant "OpenAI VectorStore\nfile_search tool" as VS
+
+User -> FE: Ask question (query)
+FE -> Route: POST /api/search {query, docId?, vectorStoreId?}
+
+Route -> Controller: search(query, docId, vectorStoreId)
+
+alt docId provided
+    Controller -> DB: findById(docId)
+    DB --> Controller: document record
+    Controller -> Rag: answer(query, docId)
+else vectorStoreId provided
+    Controller -> Rag: answer(query, vectorStoreId)
+end
+
+Rag -> Rag: listVectorStoreFiles()
+Rag -> VS: vectorStores.files.list()
+VS --> Rag: file metadata
+
+Rag -> Rag: build system prompt\n(with allowed filenames)
+
+Rag -> OA: responses.create(\nmodel, system prompt,\nuser question,\nfile_search tool)
+
+OA -> VS: Perform semantic search\n(top-K chunks)
+VS --> OA: Retrieved chunks
+
+OA -> OA: Generate final answer\n+ citations
+OA --> Rag: response.output
+
+Rag -> Rag: Parse output\n(text + citations)
+
+Rag --> Controller: {text, sources}
+
+Controller --> FE: {answer, sources}
+
+FE -> User: Display in ChatFeed + SourcesPanel
+
 @enduml
