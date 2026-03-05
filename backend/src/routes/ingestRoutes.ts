@@ -14,7 +14,7 @@ const controller = new IngestController(ingestService);
 
 router.post(
     "/ingest",
-    upload.single("file"), // INGEST 2 
+    upload.single("file"), // INGEST 1.5 middleware to handle file upload (multer) 
     controller.ingest
 );
 

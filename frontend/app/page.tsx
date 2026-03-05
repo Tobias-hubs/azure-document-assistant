@@ -94,6 +94,7 @@ export default function Home() {
     }
   }, [username, docId]);
 
+  // SEARCH 1 Ask backend with question + docId or vectorStoreId
   const askBackend = async () => {
     if (!query) return; 
 

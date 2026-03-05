@@ -1,6 +1,6 @@
 import OpenAI from "openai"; 
 import { Readable } from "stream"; 
-
+// INGEST 3 integration with openAI SDK 
 export class HostedIngestService { 
     constructor( 
         private client: OpenAI, 
@@ -18,18 +18,22 @@ export class HostedIngestService {
             type: "application/pdf",
         });
 
+        // Upload file to OpenAI Files
         const uploaded = await this.client.files.create({ 
             file, 
             purpose: "assistants",
         }); 
 
+
+        // Link to vector store
         const vsFile = await this.client.vectorStores.files.create(
             this.vectorStoreId, 
               { file_id: uploaded.id, 
 
+                // Metadata 
                 attributes: { 
                     docId: docId, 
-                    filename: filename,
+                    filename: filename, 
                  }
                } 
         );
@@ -37,6 +41,7 @@ export class HostedIngestService {
         // Polling for file processing completion (vector store ingestion)
         await this.pollFileReady(vsFile.id);
 
+        // Save file references for later use (deletion, management) (SQLite will have docId → vectorStoreFileId + fileId for management)
         return { 
             fileId: uploaded.id, 
             vectorStoreFileId: vsFile.id,

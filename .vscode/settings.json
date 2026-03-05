@@ -11,7 +11,8 @@
         "SEARCH", 
         "NOTE", 
         "BUG", 
-        "TEST"
+        "TEST", 
+        "SQL"
     
     ],
     "todo-tree.tree.showBadges": true,
@@ -49,6 +50,10 @@
             "background": "#d73a49"
         } ,
         "TEST": {
+            "foreground": "#ffffff",
+            "background": "#d73a49"
+        },
+        "SQL": {
             "foreground": "#ffffff",
             "background": "#d73a49"
         }

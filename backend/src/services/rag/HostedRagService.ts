@@ -9,6 +9,7 @@ export class HostedRagService implements RagService {
     private defaultVectorStoreId: string,
   ) {}
 
+  // SEARCH 4
   // NOTE List files - this is needed to build the system prompt that tells the model which files it can use as sources.
   private async listVectorStoreFiles(vectorStoreId: string): Promise<string[]> {
     const page = await this.client.vectorStores.files.list(vectorStoreId);

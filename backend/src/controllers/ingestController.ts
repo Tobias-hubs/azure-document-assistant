@@ -9,7 +9,8 @@ import crypto from "crypto";
 export class IngestController { 
     // Dependency Injection
     constructor(private ingestService: HostedIngestService) {}
-
+ 
+    // INGEST 2 This controller method is called by frontend when a user uploads a PDF. 
     // Handler method for POST /api/ingest
     ingest = async (req: Request, res: Response) => { 
         try { 
@@ -19,7 +20,7 @@ export class IngestController {
                 return res.status(400).json({ error: "No PDF uploaded" }); 
             }
 
-            // Compute content hash for deduplication
+            // Compute content hash for deduplication (To not be able to upload same file multiple times, even with different names)
             const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
             // Check for existing document with same content hash
@@ -35,12 +36,14 @@ export class IngestController {
 
             const docId = randomUUID(); // NOTE Generate Unique ID (Separate from openai fileId)
 
+            // Send file buffer to HostedIngestService which handles the upload to OpenAI and vector store
             const result = await this.ingestService.uploadFile(
                 file.buffer,
                 file.originalname,
                 docId); // (buffer = binary)  
 
-                // Save metadata in SQLite (local)
+                // Save metadata in SQLite (local) 
+                //Enables deduplication, file management
                 documentRepository.create( 
                     docId, 
                     result.fileId, // OpenAI file ID
@@ -50,7 +53,7 @@ export class IngestController {
                     hash 
                 ); 
 
-                // Answer to frontend
+                // Answer to frontend UploadButton on successful ingest
             res.json({ 
                 status: "ok",
                 docId, 
@@ -62,6 +65,7 @@ export class IngestController {
         }
     };
 
+    // Deletes from vectorstore & sqlite
     delete = async(req: Request, res: Response) => { 
         try { 
             const docIdParam  = req.params.docId;

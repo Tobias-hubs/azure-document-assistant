@@ -8,7 +8,7 @@ type Props = {
     loading: boolean; 
     endRef: RefObject<HTMLDivElement | null>; 
 }; 
-
+// SEARCH 7 + SourcesPanel
 export function ChatFeed({ messages, loading, endRef }: Props) { 
     return ( 
         <div className="flex-1 overflow-y-auto p-6 space-y-3">

@@ -1,6 +1,7 @@
 import { RagService } from "../services/rag/RagService";
 import { AnswerDTO } from "../models/types";
 
+// SEARCH 3 mainly routes the search request from frontend to RagService, and maps the response to a DTO for frontend.
 export class SearchController {
   constructor(private rag: RagService) {}
 

@@ -91,6 +91,7 @@ app.post("/api/chat", (req, res) => {
     res.json({ ok: true });
 });
 
+// SEARCH 2 (eg. 1, frontend initiates the search) 
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
         const { query, docId, vectorStoreId, userId } = req.body;

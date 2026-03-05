@@ -1,5 +1,5 @@
 import { db } from "../db/database"; 
-
+// SQL 4  Local storage after ingestion, - documents.db
 export interface DocumentRecord  { 
     id: string; 
     file_id: string; 
@@ -11,7 +11,7 @@ export interface DocumentRecord  {
     filename: string; 
     created_at: string; 
 }
-
+// In computer programming, create, read, update, and delete (CRUD) are the four basic operations (actions) of persistent storage.
 export const documentRepository = { 
     create: ( 
         docId: string, 
@@ -21,7 +21,7 @@ export const documentRepository = {
         vectorStoreFileId?: string, 
         contentHash?: string
     ) => { 
-        // questionmarks protects against SQL injection
+        // Parameter binding (`?`) prevents SQL injection by separating data from SQL code.
         const stmt = db.prepare(`
             INSERT INTO documents (id, file_id, vector_store_id, filename, vector_store_file_id, content_hash)
             VALUES (?, ?, ?, ?, ?, ?) 
@@ -36,6 +36,8 @@ export const documentRepository = {
 
             return stmt.get(docId) as DocumentRecord | undefined; 
     }, 
+
+    // TODO Add documentRepository.list() to get all documents for a user in UI,
 
     findByHash: (contentHash: string): DocumentRecord | undefined => { 
         const stmt = db.prepare(`
