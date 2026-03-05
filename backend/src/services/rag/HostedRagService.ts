@@ -9,12 +9,13 @@ export class HostedRagService implements RagService {
     private defaultVectorStoreId: string,
   ) {}
 
-  // TODO List files
+  // NOTE List files - this is needed to build the system prompt that tells the model which files it can use as sources.
   private async listVectorStoreFiles(vectorStoreId: string): Promise<string[]> {
     const page = await this.client.vectorStores.files.list(vectorStoreId);
     return page.data.map((f) => (f as any).attributes?.filename ?? f.id);
   }
 
+  // System prompt builder (dynamic) 
   private async buildFileAwareness(vectorStoreId: string): Promise<string> {
     const files = await this.listVectorStoreFiles(vectorStoreId);
 
@@ -27,7 +28,7 @@ Viktigt:
 - Om användaren frågar efter en fil som inte finns här ska du säga det.
 - När du citerar information, nämn alltid vilken fil källan kommer ifrån.
   `.trim();
-  }
+  } // Use Swedish in system prompt to encourage Swedish answers 
 
   async answer(
     question: string,
@@ -50,7 +51,11 @@ Viktigt:
       throw new Error("Vector store ID or docid needed for search");
     }
 
-    const systemPrompt = await this.buildFileAwareness(vectorStoreIds[0]); 
+    const resolvedId = vectorStoreIds[0];
+    if (!resolvedId) {
+      throw new Error("No vector store ID provided ");
+    }
+    const systemPrompt = await this.buildFileAwareness(resolvedId); 
 
     const response = await this.client.responses.create({
       model: "gpt-4.1-mini", // TODO gpt 5? gpt-4.1 turbo (for image support)?
