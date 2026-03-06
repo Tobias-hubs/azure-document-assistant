@@ -100,8 +100,8 @@ export default function Home() {
 
     if (!vectorStoreId && !docId) { 
       setMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: "Välj en kunskapsbas först" }, // TODO Should not be a AI answer - instead a text prompt
+        ...prev, 
+        { sender: "ai", text: "Välj en kunskapsbas först" }, // Default  
       ]);
       return;
     }

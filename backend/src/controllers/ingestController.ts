@@ -84,7 +84,7 @@ export class IngestController {
 
             await this.ingestService.deleteFile(
                 record.file_id, 
-                record.vector_store_file_id // SQL 
+                record.vector_store_file_id // SQL Remove SQL from project, try to make vectorstore store instead. 
             ); 
 
             documentRepository.delete(docId!); 

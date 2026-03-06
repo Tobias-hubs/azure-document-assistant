@@ -24,7 +24,7 @@ const openai = new OpenAI({
 app.get("/api/vector-stores", async (req, res) => {
     try { 
 const stores = [
-     { id: process.env.OPENAI_VECTOR_STORE_ID!, name: "Default knowledge base" }, ];
+     { id: process.env.OPENAI_VECTOR_STORE_ID!, name: "Förvald kunskapsbas" }, ];
 res.json(stores);
     } catch (error) {
         console.error("Error fetching vector stores:", error);
@@ -40,16 +40,6 @@ if (!defaultVectorStoreId) {
 const ragService = new HostedRagService(openai, defaultVectorStoreId);
 const ingestService = new HostedIngestService(openai, defaultVectorStoreId);
 
-
-// const ragService = new HostedRagService( 
-//     openai, 
-//     vectorStoreId
-// );
-
-// const ingestService = new HostedIngestService( 
-//     openai, 
-//     vectorStoreId
-// );
 
 app.use("/api", createIngestRoutes(ingestService));
 
@@ -91,7 +81,7 @@ app.post("/api/chat", (req, res) => {
     res.json({ ok: true });
 });
 
-// SEARCH 2 (eg. 1, frontend initiates the search) 
+// SEARCH 2 (frontend initiates the search) 
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
         const { query, docId, vectorStoreId, userId } = req.body;

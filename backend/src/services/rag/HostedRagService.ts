@@ -59,7 +59,7 @@ Viktigt:
     const systemPrompt = await this.buildFileAwareness(resolvedId); 
 
     const response = await this.client.responses.create({
-      model: "gpt-4.1-mini", // TODO gpt 5? gpt-4.1 turbo (for image support)?
+      model: "gpt-5.2", // TODO gpt 5? gpt-4.1 turbo (for image support)?
       input: [ 
         { role: "system", content: systemPrompt }, 
         { role: "user", content: question }

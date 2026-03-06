@@ -11,7 +11,7 @@ export interface DocumentRecord  {
     filename: string; 
     created_at: string; 
 }
-// In computer programming, create, read, update, and delete (CRUD) are the four basic operations (actions) of persistent storage.
+// create, read, update, and delete (CRUD) are the four basic operations (actions) of persistent storage.
 export const documentRepository = { 
     create: ( 
         docId: string, 
