@@ -1,11 +1,11 @@
 /* */
 import toast from "react-hot-toast";
 import { useState } from "react";
-
+ 
 type UploadResult = { 
     docId: string; 
     displayName: string; 
-    vectorStoreId?: string; // Optional, 
+    vectorStoreId?: string; //REFACTOR Optional for sqlite chat persistence (sqlite is going to be removed)
 }; 
 
 type ApiDuplicateResponse = { 
@@ -42,7 +42,7 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Backend uses Multer's upload.singe("file") to read as req.file
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingest`, {
         method: "POST", 
-        body: formData, 
+        body: formData, // Browser generates the correct multipart/form-data headers including boundaries, setting it manually would cause issues.
     });
 
     // Handle duplicate error (409 Conflict)
@@ -105,7 +105,7 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const data: UploadResult = raw;
     
 
-    // Notify user
+    //NOTE Notify user (Polling should be taken in consideration for better UX) 
     toast.success(`PDF '${data.displayName}' uppladdad!`); 
     onUploadSuccess?.(data);
 
@@ -139,7 +139,7 @@ return (
         onClick={() => document.getElementById("pdfInput")?.click()}
         disabled={loading}
         >
-            {loading ? "Loading..." : "Ladda upp PDF"}
+            {loading ? "Loading..." : "Ladda upp Dokument"}
         </button>
     </div>
 );

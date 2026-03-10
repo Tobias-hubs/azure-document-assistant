@@ -1,5 +1,6 @@
 import OpenAI from "openai"; 
 import { Readable } from "stream"; 
+
 // INGEST 3 integration with openAI SDK 
 export class HostedIngestService { 
     constructor( 
