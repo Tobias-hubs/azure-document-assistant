@@ -22,7 +22,22 @@ export function ChatMessage({ msg }: { msg: Message }) {
                 `}
                 >
                     {msg.text}
-                </div>
+              
+                {/* Sources in AI answer */}
+                {msg.sources && msg.sources.length > 0 && ( 
+                    <div className="mt-4 border-t border-zinc-700 pt-3 space-y-2">
+                        <p className="text-sm text-zinc-300 font-medium"> 
+                            Källor:</p>
+                        <ul className="list-disc list-inside text-sm text-zinc-300">
+                            {msg.sources.map((source, index) => (
+                                <li key={index}>
+                                    {source.documentName} (s. {source.page})
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+        </div>
         </div>
     );
 }

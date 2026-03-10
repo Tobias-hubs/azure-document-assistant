@@ -7,14 +7,12 @@ import { UploadButton } from "./components/upload/UploadButton";
 import { Message } from "./components/types/chat";
 import { ChatFeed } from "./components/chat/ChatFeed";
 import { ChatInput } from "./components/chat/ChatInput";
-import { SourcePanel } from "./components/chat/SourcesPanel"; 
 import { PdfChip } from "./components/pdf/PdfChip";
 
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [sources, setSources] = useState<any[]>([]); // Temporary any
   const [docId, setDocId] = useState<string | null>(null); 
   const [username, setUsername] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -138,13 +136,15 @@ export default function Home() {
       const data = await response.json();
 
       // Ai answer
-      setMessages((prev) => [...prev, { sender: "ai", text: data.answer }]);
+      setMessages((prev) => [...prev, { sender: "ai", text: data.answer, sources: data.sources || [] 
+       }]);
+
       if (username && docId) {
-        await saveMessage(username, docId, "ai", data.answer);// Save AI answer to backend
+         saveMessage(username, docId, "ai", data.answer)// Save AI answer to backend
+         .catch(error => console.warn("saveMessage error:", error));
        } 
-      // saveMessage(username, docId, "ai", data.answer); // Save AI answer to backend
-      setSources(data.sources);
-    } catch (error) {
+     
+     } catch (error) {
       console.error("Error fetching from backend:", error);
 
       setMessages((prev) => [
@@ -212,21 +212,6 @@ export default function Home() {
       endRef={endRef}
         />
 
-        
-          <SourcePanel sources={sources} /> 
-          {/* <PdfViewer pdfUrl={pdfUrl} />  */}
-          {activeDoc && (
-          <div className="space-y-4 p-6 border-t border-zinc-700">
-          <PdfChip 
-          displayName={activeDoc.displayName}
-          onOpen={() => setIsPdfOpen(true)}
-          onRemove={() => { 
-            setActiveDoc(null);
-            setDocId(null);
-          }}
-          />
-        </div>
-  )}
 
         {/* Input & Upload */}
       <ChatInput
