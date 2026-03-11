@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import { Answer } from "../../models/types";
 import { RagService } from "./RagService"; 
-import { documentRepository } from "../../repositories/documentRepository";
 
 export class HostedRagService implements RagService {
   constructor(
@@ -33,29 +32,13 @@ Viktigt:
 
   async answer(
     question: string,
-    docId?: string,
     vectorStoreId?: string,
   ): Promise<Answer> {
     const textChunks: string[] = [];
     const sources: Answer["sources"] = [];
 
-    let vectorStoreIds: string[];
-    if (docId) {
-      const doc = documentRepository.findById(docId);
-      if (!doc) throw new Error("Document not found: " + docId);
+    const resolvedId = vectorStoreId || this.defaultVectorStoreId;
 
-      // file_search expects vector store id that start with "vs"
-      vectorStoreIds = [doc.vector_store_id];
-    } else if (vectorStoreId || this.defaultVectorStoreId) {
-      vectorStoreIds = [vectorStoreId || this.defaultVectorStoreId];
-    } else {
-      throw new Error("Vector store ID or docid needed for search");
-    }
-
-    const resolvedId = vectorStoreIds[0];
-    if (!resolvedId) {
-      throw new Error("No vector store ID provided ");
-    }
     const systemPrompt = await this.buildFileAwareness(resolvedId); 
 
     const response = await this.client.responses.create({
@@ -67,7 +50,7 @@ Viktigt:
       tools: [
         {
           type: "file_search",
-          vector_store_ids: vectorStoreIds,
+          vector_store_ids: [resolvedId],
           max_num_results: 10,
         },
       ],

@@ -3,13 +3,8 @@ import { upload } from "../middleware/upload";
 import { IngestController } from "../controllers/IngestController";
 import { HostedIngestService } from "../services/HostedIngestService";
 
-export function createIngestRoutes(
-    ingestService: HostedIngestService
-) {  
+export function createIngestRoutes(ingestService: HostedIngestService) {  
 const router = Router(); 
-
-
-
 const controller = new IngestController(ingestService); 
 
 router.post(
@@ -19,7 +14,7 @@ router.post(
 );
 
 router.delete(
-    "/ingest/:docId", 
+    "/ingest/:fileId/:vectorStoreFileId", 
     controller.delete);
 
 

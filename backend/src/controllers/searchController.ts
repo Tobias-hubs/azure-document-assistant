@@ -5,12 +5,12 @@ import { AnswerDTO } from "../models/types";
 export class SearchController {
   constructor(private rag: RagService) {}
 
-  async search(query: string, docId?: string, vectorStoreId?: string, userId?: string): Promise<AnswerDTO> {
-    if (!docId && !vectorStoreId) {
-      throw new Error("Either docId or vectorStoreId must be provided for search");
+  async search(query: string, vectorStoreId?: string, userId?: string): Promise<AnswerDTO> {
+    if (!vectorStoreId) {
+      throw new Error("VectorStoreId must be provided for search");
     }
 
-    const answer = await this.rag.answer(query, docId, vectorStoreId);
+    const answer = await this.rag.answer(query, vectorStoreId);
 
     return { answer: answer.text, sources: answer.sources };
     // Internaly map Answer to AnswerDTO for frontend: 

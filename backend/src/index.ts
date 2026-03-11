@@ -8,7 +8,8 @@ import { Logger } from "./utils/logger";
 import { HostedRagService } from "./services/rag/HostedRagService"; 
 import { HostedIngestService } from "./services/HostedIngestService";
 import { createIngestRoutes } from "./routes/ingestRoutes";
-import { db } from "./db/database";
+import { createDocumentRoutes } from "./routes/documentRoutes";
+
 
 dotenv.config();
 
@@ -43,6 +44,8 @@ const ingestService = new HostedIngestService(openai, defaultVectorStoreId);
 
 app.use("/api", createIngestRoutes(ingestService));
 
+app.use("/api", createDocumentRoutes(openai, defaultVectorStoreId));
+
 
 const logger = new Logger();
 
@@ -52,46 +55,17 @@ app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Internal Document Assistant API is running");
 });
 
-app.get("/api/chat/history", (req, res ) => {
-    const { userName, docId } = req.query;
-    if (!userName || !docId) {
-        return res.status(400).json({ error: "userName och docId krävs" });
-    }
-    const rows = db.prepare(`
-        SELECT sender, text FROM chat_messages
-        WHERE user_name = ? AND doc_id = ?
-        ORDER BY created_at ASC
-    `).all(userName, docId);
-    res.json(rows);
-});
-
-app.post("/api/chat", (req, res) => {
-    const { username, docId, sender, text } = req.body;
-    db.prepare(` 
-        INSERT INTO chat_messages (id, user_name, doc_id, sender, text, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-    `).run(
-        crypto.randomUUID(),
-        username,
-        docId,
-        sender,
-        text,
-        Date.now()
-    );
-    res.json({ ok: true });
-});
-
 // SEARCH 2 (frontend initiates the search) 
 app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
-        const { query, docId, vectorStoreId, userId } = req.body;
+        const { query, vectorStoreId, userId } = req.body;
 
-        if (!query || (!docId && !vectorStoreId)) {
-            return res.status(400).json({ error: "query och docId eller vectorStoreId krävs" });
+        if (!query || !vectorStoreId) {
+            return res.status(400).json({ error: "query och vectorStoreId krävs" });
         }
 
     
-       const result = await searchController.search(query, docId, vectorStoreId, userId);
+       const result = await searchController.search(query, vectorStoreId, userId);
         res.json(result);
     } catch (error) {
         console.error("Search error:", error);

@@ -7,51 +7,22 @@ import { UploadButton } from "./components/upload/UploadButton";
 import { Message } from "./components/types/chat";
 import { ChatFeed } from "./components/chat/ChatFeed";
 import { ChatInput } from "./components/chat/ChatInput";
-import { PdfChip } from "./components/pdf/PdfChip";
+import { PdfChip } from "./components/documents/PdfChip";
+import { DocumentList } from "./components/documents/DocumentList";
 
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [docId, setDocId] = useState<string | null>(null); 
   const [username, setUsername] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeDoc, setActiveDoc] = useState<ActiveDoc | null>(null);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [vectorStoreId, setVectorStoreId] = useState<string | null>(null);
   const [vectorStores, setVectorStores] = useState<{id: string, name: string}[]>([]);
-
-  async function loadChat(username: string, docId: string) { 
-    const res = await fetch( 
-      `${API_URL}/api/chat/history?userName=${username}&docId=${docId}`
-    );
-    if (!res.ok) return; 
-    const rows = await res.json();
-    setMessages(rows); 
-  }; 
-
-  async function saveMessage(username: string, docId: string, sender: "user" | "ai", text: string) { 
-    await fetch(`${API_URL}/api/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        docId,
-        sender,
-        text,
-      }),
-    });
-  };
-
-
-
-  type ActiveDoc = { 
-    docId: string; 
-    displayName: string; 
-  };
+  const [activeFile, setActiveFile] = useState<{ fileId: string; vectorStoreFileId: string, filename: string } | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // For forcing re-render of DocumentList after upload/replace/delete
+  const [showDocuments, setShowDocuments] = useState(false);
 
   const endRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -86,17 +57,11 @@ export default function Home() {
   } , []);
 
 
-  useEffect(() => {
-    if (username && docId) {
-      loadChat(username, docId);
-    }
-  }, [username, docId]);
-
-  // SEARCH 1 Ask backend with question + docId or vectorStoreId
+  // SEARCH 1 Ask backend with question + vectorStoreId
   const askBackend = async () => {
     if (!query) return; 
 
-    if (!vectorStoreId && !docId) { 
+    if (!vectorStoreId ) { 
       setMessages((prev) => [
         ...prev, 
         { sender: "ai", text: "Välj en kunskapsbas först" }, // Default  
@@ -104,10 +69,7 @@ export default function Home() {
       return;
     }
 
-    if (username && docId) {
-      await saveMessage(username, docId, "user", query); // Save user message to backend
-    }
-
+  
     setMessages((prev) => [...prev, { sender: "user", text: query }]);
     setQuery("");
     setLoading(true);
@@ -115,12 +77,10 @@ export default function Home() {
     try {
       // Fallback: använd API_URL om den finns, annars localhost:3001
       const BASE_URL = API_URL || "http://localhost:3001";
-      console.log("Sending search:", query, docId);
+      console.log("Sending search:", query);
 
-      const body: any = { query };
-       if (docId) body.docId = docId;               
-        else if (vectorStoreId) body.vectorStoreId = vectorStoreId;
-
+      const body: any = { query, vectorStoreId};
+       
       const response = await fetch(`${BASE_URL}/api/search`, {
         method: "POST",
         headers: {
@@ -139,13 +99,6 @@ export default function Home() {
       setMessages((prev) => [...prev, { sender: "ai", text: data.answer, sources: data.sources || [] 
        }]);
 
-      if (username && docId) {
-         saveMessage(username, docId, "ai", data.answer)// Save AI answer to backend
-         .catch(error => console.warn("saveMessage error:", error));
-       } 
-     
-     } catch (error) {
-      console.error("Error fetching from backend:", error);
 
       setMessages((prev) => [
         ...prev,
@@ -166,7 +119,14 @@ export default function Home() {
     <span className="text">Document</span>
     <span className="text">Assistant</span>
   </h1>
-
+  <div className="absolute left-6 top-6"> 
+  <button 
+  onClick={() => setShowDocuments(true)}
+  className="p-2 text-zinc-300 hover:text-white"
+  > 
+  ☰
+  </button>
+</div>
   {/* style logo */}
   <div className="flex gap-3 mt-0 -ml-4">
     <div className="w-3 h-3 rounded-full bg-white"></div>
@@ -190,7 +150,6 @@ export default function Home() {
       onChange={(e) => {
         const id = e.target.value;
         setVectorStoreId(id);
-        setDocId(null); // Clear docId when vector store changes
         localStorage.setItem("vectorStoreId", id);
       }}
       className="bg-zinc-800 text-zinc-100 p-1 rounded"
@@ -223,19 +182,34 @@ export default function Home() {
           <div className="mt-3 flex justify-end">
             <UploadButton
             onUploadSuccess={async (data) => { 
-              setDocId(data.docId); 
-              setActiveDoc({
-                docId: data.docId, 
-                displayName: data.displayName,
-              });
               if (data.vectorStoreId) {
                 setVectorStoreId(data.vectorStoreId);
                 localStorage.setItem("vectorStoreId", data.vectorStoreId);
               } 
-            }}
+              setActiveFile({ fileId: data.fileId, vectorStoreFileId: data.vectorStoreFileId, filename: data.filename });
+
+            setRefreshKey(k => k + 1); 
+          }}
             />
           </div>
+          
+{showDocuments && (
+  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex">
+    <div className="w-80 bg-zinc-900 shadow-xl p-4 h-full overflow-auto">
+      
+      {/* Stäng-knapp */}
+      <button
+        className="mb-4 text-zinc-400 hover:text-white"
+        onClick={() => setShowDocuments(false)}
+      >
+        Stäng ✕
+      </button>
+
+          <DocumentList refreshKey={refreshKey} />
         </div>
       </div>
+)}
+      </div>
+    </div>
   );
 }

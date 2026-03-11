@@ -1,5 +1,7 @@
 import OpenAI from "openai"; 
 import { Readable } from "stream"; 
+import { toFile } from "openai";
+import { stat } from "fs";
 
 // INGEST 3 integration with openAI SDK 
 export class HostedIngestService { 
@@ -11,20 +13,21 @@ export class HostedIngestService {
     async uploadFile(
         buffer: Buffer, 
         filename: string, 
-        docId: string
+        mimetype: string
     ) {
 
-        const uint8 = new Uint8Array(buffer); 
-        const file = new File([uint8], filename, { 
-            type: "application/pdf",
-        });
+        // const uint8 = new Uint8Array(buffer); 
+        // const file = new File([uint8], filename, { 
+        //     type: "application/pdf",
+        // });
 
         // Upload file to OpenAI Files
         const uploaded = await this.client.files.create({ 
-            file, 
-            purpose: "assistants",
-        }); 
-
+            file: await toFile(buffer, filename, { 
+                type: mimetype || "application/octet-stream"
+             }), 
+             purpose: "assistants",
+        });
 
         // Link to vector store
         const vsFile = await this.client.vectorStores.files.create(
@@ -33,8 +36,8 @@ export class HostedIngestService {
 
                 // Metadata 
                 attributes: { 
-                    docId: docId, 
                     filename: filename, 
+                    uploadedAt: new Date().toISOString()
                  }
                } 
         );
@@ -42,7 +45,7 @@ export class HostedIngestService {
         // Polling for file processing completion (vector store ingestion)
         await this.pollFileReady(vsFile.id);
 
-        // Save file references for later use (deletion, management) (SQLite will have docId → vectorStoreFileId + fileId for management)
+        // Save file references for later use (deletion, management) 
         return { 
             fileId: uploaded.id, 
             vectorStoreFileId: vsFile.id,
@@ -69,19 +72,36 @@ export class HostedIngestService {
         }
     }
     // fileId = openAi file reference, vectorStoreFileId = reference in vector store (for deletion)
-       async deleteFile(fileId: string, vectorStoreFileId: string) { 
+       async deleteFile(fileId: string | null | undefined, vectorStoreFileId: string) { 
 
+        try { 
             // SDK requires FileDeleteParams object with {vector_store_id}: string;
             await this.client.vectorStores.files.delete(
-               vectorStoreFileId, 
-               { vector_store_id: this.vectorStoreId } // NOTE This was troublesome due to SDK version changes!
-               
-                // fileId, 
-                // {vector_store_id: this.vectorStoreId} 
-                
+               vectorStoreFileId,
+               { vector_store_id: this.vectorStoreId }   // NOTE This was troublesome due to SDK version changes!
             ); 
+        } catch (err) {
+            console.error("Error deleting from vector store:", err);
+            // Continue with file deletion even if vector store deletion fails
+        }
 
+        if (!fileId || fileId === "null" || fileId === "undefined") {
+            console.warn("No valid fileId provided, skipping OpenAI file deletion");
+            return{ status: "deleted" };
+        }
+
+        try { 
             await this.client.files.delete(fileId); 
+        } catch (err: any) {
+            if (err.status === 404) {
+                console.warn(`File with ID ${fileId} not found in OpenAI, might have been already deleted.`);
+            } else {
+            console.error("Error deleting file from OpenAI:", err);
+        }   
+    }
+            return { status: "deleted" };   
+
         
+    
     }
 }
