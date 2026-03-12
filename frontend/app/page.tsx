@@ -95,11 +95,15 @@ export default function Home() {
 
       const data = await response.json();
 
+      if (!data?.answer) throw new Error("No answer in response");
+        
       // Ai answer
-      setMessages((prev) => [...prev, { sender: "ai", text: data.answer, sources: data.sources || [] 
-       }]);
-
-
+      setMessages((prev) => [
+        ...prev, { sender: "ai", text: data.answer, sources: data.sources || [], vision: data.vision || undefined }
+       ]);
+      } catch (err) { 
+        console.error(err);
+        // If no answer in response
       setMessages((prev) => [
         ...prev,
         { sender: "ai", text: "Something went wrong with backend response." },
@@ -117,7 +121,7 @@ export default function Home() {
        
        
       
-        <header className="shrink-0 border-b border-zinc-700 p-6 flex items-start sm:items-center gap-20">
+        <header className="shrink-0 border-b border-zinc-700 p-6 flex items-start sm:items-center sm:justify-between gap-4">
  {/* Hamburger button */}
   <button 
   onClick={() => setShowDocuments(true)}

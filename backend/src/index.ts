@@ -9,6 +9,7 @@ import { HostedRagService } from "./services/rag/HostedRagService";
 import { HostedIngestService } from "./services/HostedIngestService";
 import { createIngestRoutes } from "./routes/ingestRoutes";
 import { createDocumentRoutes } from "./routes/documentRoutes";
+import { OpenAIVisionAdapter } from "./services/vision/OpenAIVisionAdapter";
 
 
 dotenv.config();
@@ -21,6 +22,8 @@ app.use(express.json());
 const openai = new OpenAI({ 
     apiKey: process.env.OPENAI_API_KEY!,
 }); 
+
+const vision = new OpenAIVisionAdapter(openai);
 
 app.get("/api/vector-stores", async (req, res) => {
     try { 
@@ -49,7 +52,7 @@ app.use("/api", createDocumentRoutes(openai, defaultVectorStoreId));
 
 const logger = new Logger();
 
-const searchController = new SearchController(ragService);
+const searchController = new SearchController(ragService, openai, vision);
 
 app.get("/", (req: express.Request, res: express.Response) => {
     res.send("Internal Document Assistant API is running");

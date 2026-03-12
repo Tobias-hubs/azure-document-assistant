@@ -22,6 +22,27 @@ export function ChatMessage({ msg }: { msg: Message }) {
                 `}
                 >
                     {msg.text}
+
+                    {/* Vision image + caption  */}
+                    {msg.vision && (
+                        
+            <div className="mt-4 p-3 bg-zinc-900 rounded-lg border border-zinc-700">
+                <div className="text-sm text-zinc-400 mb-2">
+                 Bild hittad på sida {msg.vision.page}
+             </div>
+
+         <img
+             src={`data:image/png;base64,${msg.vision.imageBase64}`}
+        alt="Bild från PDF"
+        className="rounded-lg max-w-full border border-zinc-600"
+         />
+
+             <div className="mt-2 text-sm text-zinc-300">
+            {msg.vision.caption}
+            </div>
+        </div>
+        )}
+
               
                 {/* Sources in AI answer */}
                 {msg.sources && msg.sources.length > 0 && ( 

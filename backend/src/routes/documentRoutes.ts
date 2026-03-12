@@ -46,12 +46,27 @@ export function createDocumentRoutes(openAi: OpenAI, vectorStoreId: string) {
             );
 
             if (match) { 
-                // Delete existing file from vector store
-                await openAi.vectorStores.files.delete(vectorStoreId, match.id);
-                // Optionally delete from OpenAI Files as well if you want to fully clean up
-                await openAi.files.delete(match.file_id);
-            }
 
+                try {
+                // Delete existing file from vector store
+                await openAi.vectorStores.files.delete( match.id, { vector_store_id: vectorStoreId 
+                    
+                });
+
+            } catch (err) { 
+                console.warn("Vectorstore delete failed:", err);
+            }
+               const oldFileId = match.file_id ?? match.file_ids?.[0] ?? null;
+               if (oldFileId) {
+                try { 
+                    await openAi.files.delete(oldFileId);
+                } catch (err) {
+                    console.warn("Files API delete failed:", err);
+                }
+            }
+        }
+
+        
             const uploaded = await openAi.files.create({ 
                 file: await toFile(file.buffer, filename, { type: file.mimetype}), 
                 purpose: "assistants"
