@@ -111,22 +111,27 @@ export default function Home() {
 
   return (
     <div className="h-screen bg-zinc-900 text-zinc-100 flex justify-center">
-      <div className="w-full max-w-4xl flex flex-col h-full">
-        {/* Header */}
-        <div className="shrink-0 border-b border-zinc-700 p-6 relative">
-  <h1 className="text-2xl font-semibold flex gap-2">
-    <span className="text">Internal</span>
-    <span className="text">Document</span>
-    <span className="text">Assistant</span>
-  </h1>
-  <div className="absolute left-6 top-6"> 
+
+    
+      <div className="w-full max-w-6xl flex flex-col h-full">
+       
+       
+      
+        <header className="shrink-0 border-b border-zinc-700 p-6 flex items-start sm:items-center gap-20">
+ {/* Hamburger button */}
   <button 
   onClick={() => setShowDocuments(true)}
   className="p-2 text-zinc-300 hover:text-white"
   > 
   ☰
   </button>
-</div>
+<div className="flex flex-col">
+  <h1 className="text-2xl font-semibold flex gap-2 flex-wrap">
+    <span className="text">Internal</span>
+    <span className="text">Document</span>
+    <span className="text">Assistant</span>
+  </h1>
+  
   {/* style logo */}
   <div className="flex gap-3 mt-0 -ml-4">
     <div className="w-3 h-3 rounded-full bg-white"></div>
@@ -141,9 +146,9 @@ export default function Home() {
   <p className="text-sm text-zinc-400 mt-3">
     Inloggad som: {username}
   </p>
-
+</div>
           {/* Dropdown for vectorstore */}
-  <div className="absolute right-6 top-12  flex items-center space-x-2">
+  <div className=" right-6 top-12  flex items-center space-x-2">
     <label className="text-sm text-zinc-200 mr-2">Kunskapsbas:</label>
     <select
       value={vectorStoreId || ""}
@@ -160,17 +165,16 @@ export default function Home() {
       ))}
     </select>
   </div>
-
-
-        </div>
+        </header>
 
         {/* Chat feed */}
+        <div className="flex-1 overflow-auto">
         <ChatFeed
       messages={messages}
       loading={loading}
       endRef={endRef}
         />
-
+</div>
 
         {/* Input & Upload */}
       <ChatInput
