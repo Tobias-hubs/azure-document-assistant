@@ -23,9 +23,12 @@ export class SearchController {
     }
 
     const answer = await this.rag.answer(query, vectorStoreId);
+    console.log("[Search] query:", query);
+    console.log("[Search] sources: ", JSON.stringify(answer.sources, null, 2));
 
     const m = query.match(/\b(?:sida|page)\s+(\d{1,4})\b/i);
-    const page = m?.[1] ? parseInt(m[1], 10) : null;
+    const page = m?.[1] ? parseInt(m[1], 10) : 1;
+    console.log("[Search] detected page:", page);
 
     if (!page) { 
 
@@ -44,6 +47,7 @@ export class SearchController {
         if (withAttr) fileId = (withAttr as any).attributes.origFileId;
       }
     }
+    console.log("[Search] fileId from sources/attributes:", fileId);
    
     // Fallback: take first file in store
     if (!fileId) { 
@@ -61,12 +65,13 @@ export class SearchController {
     }
 
     const imageBase64 = await extractOnePageImageBase64(this.openai, fileId, page);
+    console.log("[Search] imageBase64 length:", imageBase64?.length);
     if (!imageBase64) {
       return { answer: answer.text, sources: answer.sources };
     }
 
     const caption = await this.vision?.annotateImage(imageBase64);
-
+console.log("[Search] vision caption:", caption?.slice(0, 200))
     return { 
       answer: answer.text, 
       sources: answer.sources,

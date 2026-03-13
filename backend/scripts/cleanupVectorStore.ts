@@ -1,8 +1,6 @@
 /* This script was necessary to clean up the vector store and global files after testing, 
  since the SDK doesn't automatically delete the global file when you delete the vector store association. You can run this with `npm run cleanup-vs` from the backend folder.
 
- 
- This script is not needed anymore because it is only going to be possible to upload 1 of the same file. "deduplication"
  */
 import OpenAI from "openai";
 import "dotenv/config";

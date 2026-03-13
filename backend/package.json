@@ -13,14 +13,13 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "multer": "^2.0.2",
-    "pdf-image-extractor": "^2.0.8",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
-    "@types/node": "^25.2.3",
+    "@types/node": "^25.5.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   },

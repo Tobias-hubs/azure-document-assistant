@@ -26,7 +26,7 @@ export class HostedIngestService {
             file: await toFile(buffer, filename, { 
                 type: mimetype || "application/octet-stream"
              }), 
-             purpose: "assistants",
+             purpose: "user_data", // NOTE "assistants" is read only (for openAI ) that is why vision not working 
         });
 
         // Link to vector store
@@ -37,7 +37,8 @@ export class HostedIngestService {
                 // Metadata 
                 attributes: { 
                     filename: filename, 
-                    uploadedAt: new Date().toISOString()
+                    uploadedAt: new Date().toISOString(), 
+                    origFileId: uploaded.id, // Keep track of original file ID for vision
                  }
                } 
         );

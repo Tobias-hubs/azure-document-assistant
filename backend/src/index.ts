@@ -9,7 +9,7 @@ import { HostedRagService } from "./services/rag/HostedRagService";
 import { HostedIngestService } from "./services/HostedIngestService";
 import { createIngestRoutes } from "./routes/ingestRoutes";
 import { createDocumentRoutes } from "./routes/documentRoutes";
-import { OpenAIVisionAdapter } from "./services/vision/OpenAIVisionAdapter";
+import { OpenAIVisionAdapter } from "./services/vision/OpenAiVisionAdapter";
 
 
 dotenv.config();
@@ -63,12 +63,19 @@ app.post("/api/search", async (req: express.Request, res: express.Response) => {
     try {
         const { query, vectorStoreId, userId } = req.body;
 
-        if (!query || !vectorStoreId) {
-            return res.status(400).json({ error: "query och vectorStoreId krävs" });
+        
+    console.log("[/api/search] CLIENT sent vectorStoreId:", vectorStoreId);
+    console.log("[/api/search] ENV vectorStoreId:", process.env.OPENAI_VECTOR_STORE_ID)
+
+
+        if (!query) {
+            return res.status(400).json({ error: "query krävs" });
         }
 
-    
-       const result = await searchController.search(query, vectorStoreId, userId);
+    const resolvedVectorStoreId = process.env.OPENAI_VECTOR_STORE_ID!;
+    console.log("[/api/search] Resolved vectorStoreId:", resolvedVectorStoreId);
+       const result = await searchController.search(query, resolvedVectorStoreId, userId);
+
         res.json(result);
     } catch (error) {
         console.error("Search error:", error);

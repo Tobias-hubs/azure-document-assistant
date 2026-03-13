@@ -69,7 +69,7 @@ export function createDocumentRoutes(openAi: OpenAI, vectorStoreId: string) {
         
             const uploaded = await openAi.files.create({ 
                 file: await toFile(file.buffer, filename, { type: file.mimetype}), 
-                purpose: "assistants"
+                purpose: "user_data" // NOTE "assistants" is read only (for openAI ) that is why vision not working 
             });
 
             const vsFile = await openAi.vectorStores.files.create(

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { Answer } from "../../models/types";
+import { Answer, SourceRef } from "../../models/types";
 import { RagService } from "./RagService"; 
 
 export class HostedRagService implements RagService {
@@ -30,13 +30,45 @@ Viktigt:
   `.trim();
   } // Use Swedish in system prompt to encourage Swedish answers 
 
+  private extractSourcesFromResponse(response: any): SourceRef[] { 
+    const sources: SourceRef[] = [];
+
+    const blocks = Array.isArray(response?.output) ? response.output : [];
+
+    for (const block of blocks) {
+      if (block.type !== "message") continue;
+
+      for (const content of block.content ?? []) { 
+        if (content.type !== "output_text") continue;
+
+
+      
+      const fileCitations = content.annotations?.filter((a: any) => a.type === "file_citation") ?? [];
+
+      for (const c of fileCitations) { 
+
+        sources.push({ 
+          documentName: c.file_name ?? "unknown",
+           page: c.page_number ?? 0,
+           offset: 0,
+           fileId: c.file_id ?? null,
+           chunkId: c.chunk_id ?? null,
+           attributes: c.attributes ?? {}
+           
+         
+        });
+      }
+    }
+    } 
+    return sources;
+      
+  }
+
   async answer(
     question: string,
     vectorStoreId?: string,
   ): Promise<Answer> {
-    const textChunks: string[] = [];
-    const sources: Answer["sources"] = [];
-
+    
     const resolvedId = vectorStoreId || this.defaultVectorStoreId;
 
     const systemPrompt = await this.buildFileAwareness(resolvedId); 
@@ -56,31 +88,43 @@ Viktigt:
       ],
     });
 
-    for (const item of response.output ?? []) {
-      if (item.type !== "message") continue;
+    const textParts: string[] = [];
+    const blocks = Array.isArray(response.output) ? response.output : [];
 
-      for (const content of item.content ?? []) {
-        if (content.type !== "output_text") continue;
+    for (const block of blocks) {
+      if (block.type !== "message") continue;
 
-        textChunks.push(content.text);
-
-        const citations =
-          content.annotations?.filter((a) => a.type === "file_citation") ?? [];
-
-        for (const c of citations) {
-          if ("filename" in c) {
-            sources.push({
-              documentName: c.filename ?? "Unknown",
-              page: 0,
-              offset: 0,
-            });
-          }
+      for (const content of block.content ?? []) {
+        if (content.type === "output_text") { 
+          textParts.push(content.text);
         }
       }
     }
 
+       const sources = this.extractSourcesFromResponse(response);
+
+       // Map doc name to file_id from vectorstore
+       const vsFilesPage = await this.client.vectorStores.files.list(resolvedId); 
+      
+       const filenameToOrigId = new Map<string, string>();
+       for (const f of vsFilesPage.data as Array<any>) {
+        const filename = f.attributes?.filename as string | undefined;
+        const origId = f.attributes?.origFileId as string | undefined;
+        if (filename && origId) filenameToOrigId.set(filename, origId);
+       }
+       console.log("[RAG] filenameToOrigId keys:", [...filenameToOrigId.keys()]);
+
+       for (const src of sources) {
+       if (!src.fileId && src.documentName) {
+        const mapped = filenameToOrigId.get(src.documentName);
+        if (mapped) src.fileId = mapped;
+        console.log(`[RAG] filled fileId for ${src.documentName} -> ${src.fileId}`);
+       }
+      }
+
+    
     return {
-      text: textChunks.join("\n").trim(),
+      text: textParts.join("\n").trim(),
       sources,
     };
   }
