@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    "types": ["node"],
+    "types": ["node", "jest"],
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -21,7 +21,7 @@
     "declarationMap": true,
 
   },
-  "include": ["src"],
+  "include": ["src", "src/tests"],
   "exclude": ["node_modules", "dist"]
 }
 
