@@ -36,30 +36,32 @@ Viktigt:
     const blocks = Array.isArray(response?.output) ? response.output : [];
 
     for (const block of blocks) {
-      if (block.type !== "message") continue;
+      if (block?.type !== "message") continue;
 
-      for (const content of block.content ?? []) { 
-        if (content.type !== "output_text") continue;
+      // for (const content of block.content ?? []) { 
+      //   if (content.type !== "output_text") continue;
 
+      const allAnnotations = 
+      block.annotations ?? 
+      block.content?.flatMap((c: any) => c?.annotations ?? []) ?? [];
 
-      
-      const fileCitations = content.annotations?.filter((a: any) => a.type === "file_citation") ?? [];
+      const fileCitations = allAnnotations.filter((a: any) => a?.type === "file_citation") ?? [];
+
+      // const fileCitations = content.annotations?.filter((a: any) => a.type === "file_citation") ?? [];
 
       for (const c of fileCitations) { 
 
         sources.push({ 
-          documentName: c.file_name ?? "unknown",
-           page: c.page_number ?? 0,
+          documentName: c?.file_name ?? "unknown",
+           page: c?.page_number ?? 0,
            offset: 0,
-           fileId: c.file_id ?? null,
-           chunkId: c.chunk_id ?? null,
-           attributes: c.attributes ?? {}
-           
-         
+           fileId: c?.file_id ?? null,
+           chunkId: c?.chunk_id ?? null,
+           attributes: c?.attributes ?? {}
+
         });
       }
     }
-    } 
     return sources;
       
   }
@@ -104,7 +106,9 @@ Viktigt:
        const sources = this.extractSourcesFromResponse(response);
 
        // Map doc name to file_id from vectorstore
+       console.log("[RAG] resolvedId:", resolvedId);
        const vsFilesPage = await this.client.vectorStores.files.list(resolvedId); 
+       console.log("[RAG] vectorStore list:", JSON.stringify(vsFilesPage.data, null, 2));
       
        const filenameToOrigId = new Map<string, string>();
        for (const f of vsFilesPage.data as Array<any>) {
@@ -121,6 +125,28 @@ Viktigt:
         console.log(`[RAG] filled fileId for ${src.documentName} -> ${src.fileId}`);
        }
       }
+
+      for (const src of sources) { 
+        const match = (vsFilesPage.data as any[]).find(
+          f => f?.attributes?.origFileId === src.fileId );
+
+         
+if (match?.attributes?.storagePath) {
+    src.attributes = {
+      ...(src.attributes ?? {}),
+      storagePath: match.attributes.storagePath,
+    };
+
+    console.log(
+      `[RAG] storagePath added for ${src.documentName}: ${match.attributes.storagePath}`
+    );
+  } else {
+    console.warn("[RAG] NO storagePath match", {
+      documentName: src.documentName,
+      fileId: src.fileId,
+    });
+  }
+}
 
     
     return {

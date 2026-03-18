@@ -1,7 +1,9 @@
 import OpenAI from "openai"; 
 import { Readable } from "stream"; 
 import { toFile } from "openai";
-import { stat } from "fs";
+import * as fs from "fs/promises";
+import * as path from "path";
+
 
 // INGEST 3 integration with openAI SDK 
 export class HostedIngestService { 
@@ -23,11 +25,23 @@ export class HostedIngestService {
 
         // Upload file to OpenAI Files
         const uploaded = await this.client.files.create({ 
+
             file: await toFile(buffer, filename, { 
                 type: mimetype || "application/octet-stream"
              }), 
              purpose: "user_data", // NOTE "assistants" is read only (for openAI ) that is why vision not working 
         });
+        
+
+        // Local save for pdfium
+        const localPath = path.resolve( 
+            process.cwd(), 
+            "storage/originals", 
+            `${uploaded.id}_${filename}`
+        ); 
+
+        await fs.mkdir(path.dirname(localPath), { recursive: true });
+        await fs.writeFile(localPath, buffer);
 
         // Link to vector store
         const vsFile = await this.client.vectorStores.files.create(
@@ -39,9 +53,11 @@ export class HostedIngestService {
                     filename: filename, 
                     uploadedAt: new Date().toISOString(), 
                     origFileId: uploaded.id, // Keep track of original file ID for vision
+                    storagePath: localPath,
                  }
                } 
         );
+        console.log("File uploaded", this.vectorStoreId);
         
         // Polling for file processing completion (vector store ingestion)
         await this.pollFileReady(vsFile.id);

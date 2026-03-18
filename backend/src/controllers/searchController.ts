@@ -1,15 +1,15 @@
 import OpenAI from "openai";
-import { VisionAdapter } from "../services/vision/VisionAdapter";
-import { extractOnePageImageBase64 } from "../services/vision/extractors/ExtractSinglePage";
 import { RagService } from "../services/rag/RagService";
 import { AnswerDTO } from "../models/types";
+
+import * as fs from "fs/promises";
+import { renderPdf } from "../services/pdf/renderPdf";
 
 // SEARCH 3 routes the search request from frontend to RagService, and maps the response to a DTO for frontend to comprehend.
 export class SearchController {
   constructor(
     private rag: RagService,
     private openai: OpenAI,
-    private vision: VisionAdapter
   ) {}
 
   async search(query: string, vectorStoreId?: string, userId?: string): Promise<AnswerDTO> {
@@ -27,62 +27,80 @@ export class SearchController {
     console.log("[Search] sources: ", JSON.stringify(answer.sources, null, 2));
 
     const m = query.match(/\b(?:sida|page)\s+(\d{1,4})\b/i);
-    const page = m?.[1] ? parseInt(m[1], 10) : 1;
+    const page: number | null= m?.[1] ? parseInt(m[1], 10) : null;
     console.log("[Search] detected page:", page);
 
-    if (!page) { 
+    let fileId: string | null = null; 
 
-    return { answer: answer.text, sources: answer.sources }; // Internaly map Answer to AnswerDTO for frontend: 
-    // 'text' from Answer becomes 'answer' in DTO, 'sources' copied as-is
+    const withFile = answer.sources.find((s: any) => typeof s?.fileId === "string"); 
+    if (withFile) fileId = (withFile as any).fileId; 
+
+    const withOrig = answer.sources.find(s => s?.attributes?.storagePath);
+    if (!fileId && withOrig) fileId = (withOrig as any).attributes.origFileId; 
+
+    const withAttr = answer.sources.find((s: any) => typeof s?.attributes?.origFileId === "string");
+    if (!fileId && withAttr) fileId = (withAttr as any).attributes.origFileId;
+
+    const src = answer.sources.find(s => s?.attributes?.storagePath);
+
+    const mentionsVisuals = /\b(bild|figur|diagram|illustration|image|figure|överst|första ordet)\b/i.test(query);
+    const shouldRenderVision = (Boolean(page) || mentionsVisuals) && 
+    Boolean(src?.attributes?.storagePath);
+
+    if (!shouldRenderVision) {
+      return { answer: answer.text, sources: answer.sources };
     }
+    
+    let imageBase64: string | null = null; 
+    let caption: string | null = null; 
 
-    let fileId: string | null = null;
+    try { 
+      const pdfBuffer = await fs.readFile(src!.attributes!.storagePath);
+      imageBase64 = await renderPdf(pdfBuffer, page ?? 1); 
 
-    if (Array.isArray(answer.sources)) { 
-      const withFile = answer.sources.find((s: any) => typeof s?.fileId === "string");
-      if (withFile) fileId = (withFile as any).fileId;
-
-      if (!fileId) { 
-        const withAttr = answer.sources.find((s: any) => typeof s?.attributes?.origFileId === "string");
-        if (withAttr) fileId = (withAttr as any).attributes.origFileId;
-      }
-    }
-    console.log("[Search] fileId from sources/attributes:", fileId);
+      if (imageBase64) { 
+       // Send image to vision Responses API
+       const visionResponse = await this.openai.responses.create({ 
+        model: "gpt-4o-mini", 
+        input: [ 
+          { 
+            role: "user", 
+            content: [ 
+              { 
+                type: "input_image",
+                image_url: `data:image/png;base64,${imageBase64}`,
+                detail: "high",
+              },
+              { 
+                type: "input_text",
+                text: `Vad är detta för bild på sida ${page}? Var tydlig och kort.`
+              }
+            ]
+          }
+        ]
+       })
    
-    // Fallback: take first file in store
-    if (!fileId) { 
-      const list = await this.openai.vectorStores.files.list(vectorStoreId); 
-
-      const first = list.data?.[0] as any; 
-      if (first) { 
-        fileId = first.file_id ?? first.file_ids?.[0] ?? null; 
-      }
-
-    }
-    if (!fileId) {
-
-      return { answer: answer.text, sources: answer.sources };
+    caption = 
+    (visionResponse as any).output_text ?? 
+    (visionResponse as any).output?.[0]?.content?.[0]?.text ?? 
+    null;
+      } 
+    } catch (err) {
+      console.error("[Search] Vision Error, fallback to text-only answer:", err);
     }
 
-    const imageBase64 = await extractOnePageImageBase64(this.openai, fileId, page);
-    console.log("[Search] imageBase64 length:", imageBase64?.length);
-    if (!imageBase64) {
-      return { answer: answer.text, sources: answer.sources };
-    }
-
-    const caption = await this.vision?.annotateImage(imageBase64);
-console.log("[Search] vision caption:", caption?.slice(0, 200))
     return { 
-      answer: answer.text, 
+      answer: answer.text,
       sources: answer.sources,
-
+      ...(imageBase64 ? { 
+      
       vision: { 
-        page, 
+        page,  
         fileId, 
         imageBase64,
         caption 
-
       } 
+    } : {})
     }; 
   }
 }
