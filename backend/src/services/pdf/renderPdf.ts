@@ -19,6 +19,7 @@ export async function renderPdf(buffer: Buffer, page: number): Promise<string> {
     await fs.writeFile(tempPdfPath, buffer);
 
     try {
+        // Render one page to PNG using pdftoppm (in poppler)
         await execFileAsync("pdftoppm", [
             "-png", 
             "-f", 
@@ -29,15 +30,30 @@ export async function renderPdf(buffer: Buffer, page: number): Promise<string> {
             tempOutPrefix
         ]); 
 
-        const pngPath = `${tempOutPrefix}-1.png`;
-        const pngBuffer = await fs.readFile(pngPath);
+        const files = await fs.readdir(tempDir);
+        console.log("[POPPLER] Files after rendering: ", files);
 
-        return pngBuffer.toString("base64");
-        
-    } finally { 
-        // Cleanup
-        console.log("[POPPLER] Files created: ", await fs.readdir(tempDir));
-        try { await fs.rm(tempPdfPath, { force: true}); } catch {}
-        try { await fs.rm(`${tempOutPrefix}-1.png`, { force: true }); } catch {}
+        const candidates = files.filter(f => f.startsWith(`${uuid}-page`) && (f.endsWith(".png") || f.endsWith(".ppm"))
+    )
+    .sort(); 
+    if (candidates.length === 0) { 
+        throw new Error("Poppler did not produce any PNG/PPM file.");
     }
+
+    const file = candidates[0]!;
+    const finalPath = path.join(tempDir, file);
+    const pngBuffer = await fs.readFile(finalPath);
+
+    return pngBuffer.toString("base64");
+} finally { 
+    try { await fs.rm(tempPdfPath, { force: true}); } catch {}
+    try { 
+        const files = await fs.readdir(tempDir);
+        await Promise.all( 
+            files 
+            .filter(f => f.startsWith(`${uuid}-page-`))
+            .map(f => fs.rm(path.join(tempDir, f), { force: true }))
+        );
+    } catch {}
+}
 }

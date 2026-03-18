@@ -35,15 +35,15 @@ export class SearchController {
     const withFile = answer.sources.find((s: any) => typeof s?.fileId === "string"); 
     if (withFile) fileId = (withFile as any).fileId; 
 
-    const withOrig = answer.sources.find(s => s?.attributes?.storagePath);
+    const withOrig = answer.sources.find(s => typeof s?.attributes?.origFileId === "string");
     if (!fileId && withOrig) fileId = (withOrig as any).attributes.origFileId; 
 
     const withAttr = answer.sources.find((s: any) => typeof s?.attributes?.origFileId === "string");
     if (!fileId && withAttr) fileId = (withAttr as any).attributes.origFileId;
 
-    const src = answer.sources.find(s => s?.attributes?.storagePath);
+    const src = answer.sources.find(s => s.fileId === fileId && s?.attributes?.storagePath);
 
-    const mentionsVisuals = /\b(bild|figur|diagram|illustration|image|figure|överst|första ordet)\b/i.test(query);
+    const mentionsVisuals = /\b(bild|bilder|figur|diagram|illustration|foto|image|picture|figure|icon|ikon|graf|grafik|överst|topp(en)?|första\s+ordet|syns|ser\s+du|föreställer)\b/i.test(query);
     const shouldRenderVision = (Boolean(page) || mentionsVisuals) && 
     Boolean(src?.attributes?.storagePath);
 

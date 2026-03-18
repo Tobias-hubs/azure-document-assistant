@@ -46,3 +46,10 @@ next-env.d.ts
 # Temp
 tmp/
 temp/
+
+
+# PDF originals & temporary rendered pictures
+storage/originals/ 
+temp_pdf_render/ 
+*.pdf 
+*.png
