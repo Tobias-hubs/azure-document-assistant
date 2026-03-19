@@ -1,9 +1,17 @@
+/* Text search & Vision search */
+
 import OpenAI from "openai";
 import { RagService } from "../services/rag/RagService";
 import { AnswerDTO } from "../models/types";
 
 import * as fs from "fs/promises";
 import { renderPdf } from "../services/pdf/renderPdf";
+
+
+import { execFile } from "child_process";
+import { promisify } from "util";
+const exec = promisify(execFile);
+
 
 // SEARCH 3 routes the search request from frontend to RagService, and maps the response to a DTO for frontend to comprehend.
 export class SearchController {
@@ -31,7 +39,6 @@ export class SearchController {
     console.log("[Search] detected page:", page);
 
     let fileId: string | null = null; 
-
     const withFile = answer.sources.find((s: any) => typeof s?.fileId === "string"); 
     if (withFile) fileId = (withFile as any).fileId; 
 
@@ -43,23 +50,42 @@ export class SearchController {
 
     const src = answer.sources.find(s => s.fileId === fileId && s?.attributes?.storagePath);
 
-    const mentionsVisuals = /\b(bild|bilder|figur|diagram|illustration|foto|image|picture|figure|icon|ikon|graf|grafik|överst|topp(en)?|första\s+ordet|syns|ser\s+du|föreställer)\b/i.test(query);
+    // If user mentions visuals or a page number - vision runs (only if PDF localy stored)
+    const mentionsVisuals = /\b(bild|bilder|bilden|figur|diagram|illustration|foto|image|picture|figure|icon|ikon|graf|grafik|överst|topp(en)?|första\s+ordet|syns|ser\s+du|föreställer)\b/i.test(query);
+    
     const shouldRenderVision = (Boolean(page) || mentionsVisuals) && 
     Boolean(src?.attributes?.storagePath);
 
     if (!shouldRenderVision) {
       return { answer: answer.text, sources: answer.sources };
     }
-    
+  
+
+    const pdfPath = src!.attributes!.storagePath; 
+   
+    // Auto detect page with image for visual questions
+    let targetPage = page; 
+
+    if (!targetPage && mentionsVisuals) { 
+      try {
+      const pagesWithImages = await findPagesWithImages(pdfPath);
+      targetPage = pagesWithImages[0] ?? 1;
+    } catch (err) { 
+      console.warn("[Search] page finder failed", err);
+      targetPage = 1;
+    }
+  }
+    // Run vision 
     let imageBase64: string | null = null; 
     let caption: string | null = null; 
 
     try { 
-      const pdfBuffer = await fs.readFile(src!.attributes!.storagePath);
-      imageBase64 = await renderPdf(pdfBuffer, page ?? 1); 
+      // Read pdf & render relevant page
+      const pdfBuffer = await fs.readFile(pdfPath);
+      imageBase64 = await renderPdf(pdfBuffer, targetPage!); 
 
       if (imageBase64) { 
-       // Send image to vision Responses API
+       // VISION Send image to vision Responses API openAI 
        const visionResponse = await this.openai.responses.create({ 
         model: "gpt-4o-mini", 
         input: [ 
@@ -73,12 +99,22 @@ export class SearchController {
               },
               { 
                 type: "input_text",
-                text: `Vad är detta för bild på sida ${page}? Var tydlig och kort.`
+                text: `Vad är detta för bild på sida ${targetPage}? Var tydlig och kort.`
               }
             ]
           }
         ]
        })
+       // VISION > Azure Vision + tweaks in endpoint (index.ts) 
+       /* 
+       
+const azureVisionResponse = await azureVisionClient.analyzeImage({
+    url: `data:image/png;base64,${imageBase64}`,
+    features: ["caption"]
+});
+const caption = azureVisionResponse.caption;
+
+       */
    
     caption = 
     (visionResponse as any).output_text ?? 
@@ -95,7 +131,7 @@ export class SearchController {
       ...(imageBase64 ? { 
       
       vision: { 
-        page,  
+        page: targetPage!,  
         fileId, 
         imageBase64,
         caption 
@@ -103,4 +139,17 @@ export class SearchController {
     } : {})
     }; 
   }
+}
+
+// Helper function to find pages with images 
+async function findPagesWithImages(pdfPath: string): Promise<number[]> { 
+  const { stdout } = await exec("pdfimages", ["-list", pdfPath]);
+  const pages = new Set<number>();
+  for (const line of stdout.split(/\r?\n/)) {
+    const m = line.trim().match(/^(\d+)\s+/); 
+    if (m && m[1] !== undefined) {
+      pages.add(parseInt(m[1], 10));
+    }
+  }
+  return [...pages].sort((a, b) => a - b);
 }

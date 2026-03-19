@@ -1,3 +1,5 @@
+
+/*
 import OpenAi from "openai";
 import { VisionAdapter } from "./VisionAdapter";
 
@@ -42,4 +44,4 @@ function pickOutputText(response: any): string {
         }
     }
     return ""; 
-}
+} */

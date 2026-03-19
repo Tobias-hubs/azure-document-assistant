@@ -12,7 +12,7 @@
         "NOTE", 
         "BUG", 
         "TEST", 
-        "SQL"
+        "VISION"
     
     ],
     "todo-tree.tree.showBadges": true,
@@ -53,9 +53,9 @@
             "foreground": "#ffffff",
             "background": "#d73a49"
         },
-        "SQL": {
+        "VISION": {
             "foreground": "#ffffff",
-            "background": "#d73a49"
+            "background": "#007acc"
         }
     }
 }
