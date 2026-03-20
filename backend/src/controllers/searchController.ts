@@ -50,6 +50,7 @@ export class SearchController {
 
     const src = answer.sources.find(s => s.fileId === fileId && s?.attributes?.storagePath);
 
+    
     // If user mentions visuals or a page number - vision runs (only if PDF localy stored)
     const mentionsVisuals = /\b(bild|bilder|bilden|figur|diagram|illustration|foto|image|picture|figure|icon|ikon|graf|grafik|överst|topp(en)?|första\s+ordet|syns|ser\s+du|föreställer)\b/i.test(query);
     
@@ -60,6 +61,8 @@ export class SearchController {
       return { answer: answer.text, sources: answer.sources };
     }
   
+    // To not get mixed answers from RAG-text & Vision
+    answer.text = ""; // VISION This is only temporary 
 
     const pdfPath = src!.attributes!.storagePath; 
    
@@ -125,19 +128,45 @@ const caption = azureVisionResponse.caption;
       console.error("[Search] Vision Error, fallback to text-only answer:", err);
     }
 
-    return { 
-      answer: answer.text,
-      sources: answer.sources,
-      ...(imageBase64 ? { 
+    
+  const finalAnswer = imageBase64
+    ? caption && caption.trim()
+      ? caption
+      : "Jag kunde tyvärr inte tolka bilden."
+    : answer.text && answer.text.trim()
+      ? answer.text
+      : "Jag kunde tyvärr inte hitta ett textbaserat svar.";
+
+  return {
+    answer: finalAnswer,
+    sources: answer.sources,
+    ...(imageBase64
+      ? {
+          vision: {
+            page: targetPage!,
+            fileId,
+            imageBase64,
+            caption,
+          },
+        }
+      : {}),
+  };
+
+
+    // VISION Temporary disabled untill pipelines have been splitup
+    // return { 
+    //   answer: answer.text,
+    //   sources: answer.sources,
+    //   ...(imageBase64 ? { 
       
-      vision: { 
-        page: targetPage!,  
-        fileId, 
-        imageBase64,
-        caption 
-      } 
-    } : {})
-    }; 
+    //   vision: { 
+    //     page: targetPage!,  
+    //     fileId, 
+    //     imageBase64,
+    //     caption 
+    //   } 
+    // } : {})
+    // }; 
   }
 }
 
