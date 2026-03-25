@@ -2,7 +2,7 @@
 
 type Props = { 
     query: string; 
-    setQuery: (v: string) => void; 
+    setQuery: (value: string) => void; 
     loading: boolean; 
     onSubmit: () => void; 
 }; 

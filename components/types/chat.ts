@@ -1,20 +1,21 @@
 
-
-
 export type SourceRef = {
-  documentName: string;
-  page: number;
-  offset: number;
-  fileId?: string | null;
-  chunkId?: string | null;
-  attributes?: Record<string, any>;
+  id: string; 
+  title?: string; 
+  filename?: string; 
+  blobUrl?: string;
+  snippet?: string;  
 };
 
+export type VisionRef = { 
+  blobUrl?: string; 
+  caption?: string; 
+}; 
+
 export type Message = {
-  // id: string; 
-    sender: "user" | "ai";
+  sender: "user" | "ai";
   text: string;
-  sources?: SourceRef[];
-  vision?: { page: number; fileId: string; imageBase64: string; caption: string };
+  context?: SourceRef[]; // Result from Azure Search
+  vision?: VisionRef[]; 
 };
 

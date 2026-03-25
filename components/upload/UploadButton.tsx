@@ -1,18 +1,8 @@
-/* NOTE Need to be rewritten for azure upload */
-
 import toast from "react-hot-toast";
 import { useState } from "react";
  
-type UploadResult = { 
-    fileId: string; 
-    vectorStoreFileId: string; 
-    filename: string; 
-    vectorStoreId?: string; 
-}; 
- 
-
 type UploadButtonProps = { 
-    onUploadSuccess?: (data: UploadResult) => void;
+    onUploadSuccess?: (data: { blobUrl: string; filename: string }) => void;
 };
 
 export function UploadButton({ onUploadSuccess }: UploadButtonProps) { 
@@ -29,13 +19,10 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Create a multipart/form-data payload
     // Form data allows to send binary files in an HTTP POST request.
     const formData = new FormData(); 
-
-    // Append the actual PDF file (binary )
-    formData.append("file", file);  // Multer expects formData.append("file", <the pdf>);
+    formData.append("file", file);  
     
-    // Send PDF to backend /api/ingest
     // Backend uses Multer's upload.singe("file") to read as req.file
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingest`, {
+    const res = await fetch("/api/upload", {
         method: "POST", 
         body: formData, // Browser generates the correct multipart/form-data headers including boundaries, setting it manually would cause issues.
     });
@@ -46,22 +33,18 @@ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         return; 
     }
 
-    const data: UploadResult = await res.json();
-
-    if (!data.fileId || !data.vectorStoreFileId) { 
-        throw new Error("Invalid response from server");
-    }
+    const data = await res.json();
 
     toast.success(`'${data.filename}' uppladdat!`);
     onUploadSuccess?.(data);
-} catch (err: any) {
+
+  } catch (err: any) {
     console.error("Upload error:", err);
     toast.error(`Upload failed: ${err.message || "Unknown error"}`);
-} finally {
+  } finally {
     setLoading(false);
-    e.target.value = ""; // Reset file input for potential re-upload of same file
-}
-
+    e.target.value = ""; 
+  }
 }; 
 
 return (
@@ -83,5 +66,5 @@ return (
             {loading ? "Loading..." : "Ladda upp Dokument"}
         </button>
     </div>
-);
+  );
 }

@@ -12,7 +12,8 @@
         "NOTE", 
         "BUG", 
         "TEST", 
-        "VISION"
+        "VISION", 
+        "AzureNote"
     
     ],
     "todo-tree.tree.showBadges": true,
@@ -54,6 +55,10 @@
             "background": "#d73a49"
         },
         "VISION": {
+            "foreground": "#ffffff",
+            "background": "#007acc"
+        },
+        "AzureNote": {
             "foreground": "#ffffff",
             "background": "#007acc"
         }
