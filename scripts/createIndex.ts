@@ -3,7 +3,7 @@ import {
   SearchIndexClient,
   AzureKeyCredential,
   SearchIndex,
-  SearchFieldDataType
+  
 } from "@azure/search-documents";
 
 async function main() {
@@ -21,18 +21,18 @@ async function main() {
     fields: [
       {
         name: "id",
-        type: SearchFieldDataType.String,
+        type: "Collection(Edm.String)",
         key: true,
         searchable: false
       },
       {
         name: "content",
-        type: SearchFieldDataType.String,
+        type: "Edm.String",
         searchable: true
       },
       {
         name: "embedding",
-        type: SearchFieldDataType.Collection(SearchFieldDataType.Single),
+        type: "Collection(Edm.Single)",
         searchable: false,
         // NEW SDK requires these two for vector fields:
         vectorSearchDimensions: 1536,
@@ -40,17 +40,17 @@ async function main() {
       },
       {
         name: "filename",
-        type: SearchFieldDataType.String,
+        type: "Edm.String",
         searchable: false
       },
       {
         name: "blobUrl",
-        type: SearchFieldDataType.String,
+        type: "Edm.String",
         searchable: false
       },
       {
         name: "title",
-        type: SearchFieldDataType.String,
+        type: "Edm.String",
         searchable: true
       }
     ],
@@ -60,7 +60,7 @@ async function main() {
         {
           name: "my-hnsw",
           kind: "hnsw",
-          hnswParameters: {
+          parameters: {
             m: 4,
             efConstruction: 400,
             efSearch: 500,
@@ -71,7 +71,7 @@ async function main() {
       profiles: [
         {
           name: "my-hnsw-profile",
-          algorithm: "my-hnsw"
+          algorithmConfigurationName: "my-hnsw"
         }
       ]
     }
