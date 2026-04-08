@@ -1,42 +1,17 @@
-import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  try {
-    const { query, context } = await req.json();
+export async function POST(req: NextRequest) {
+  const { question, searchResults } = await req.json();
 
-    if (!query) {
-      return NextResponse.json({ error: "Missing query" }, { status: 400 });
-    }
-
-    const openai = new OpenAI({
-      apiKey: process.env.AZURE_OPENAI_KEY!,
-      baseURL: `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT}`,
-      defaultHeaders: {
-        "api-key": process.env.AZURE_OPENAI_KEY!,
-      },
-    });
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are an internal document assistant. Use context to answer the user.",
-        },
-        {
-          role: "user",
-          content: `Fråga: ${query}\n\nContext:\n${JSON.stringify(context, null, 2)}`
-        }
-      ],
-      temperature: 0.2,
-    });
-
-    return NextResponse.json({ answer: response.choices[0].message.content });
-  } catch (err: any) {
+  if (!question || !searchResults) {
     return NextResponse.json(
-      { error: err?.message ?? "Chat error" },
-      { status: 500 }
+      { error: "Missing question or searchResults" },
+      { status: 400 }
     );
   }
+
+  return NextResponse.json({
+    answer: `Jag hittade ${searchResults.length} relevanta stycken.`,
+    sources: searchResults
+  });
 }

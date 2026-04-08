@@ -1,4 +1,5 @@
 import { BlobServiceClient } from "@azure/storage-blob";
+import { randomUUID } from "crypto";
 
 
 export async function POST(req: Request) {
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
   const container = blobService.getContainerClient(process.env.AZURE_STORAGE_CONTAINER_NAME!);
   await container.createIfNotExists();  
 
-  const blobName = `${Date.now()}-${file.name}`; //NOTE: change to UUID`?? 
+  const blobName = `${randomUUID()}-${file.name}`; //NOTE: change to UUID`?? 
   const blobClient = container.getBlockBlobClient(blobName);
 
   

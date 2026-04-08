@@ -5,7 +5,6 @@ import {
 } from "@azure/search-documents";
 
 export async function GET() {
-  try {
     const client = new SearchClient(
       process.env.AZURE_SEARCH_ENDPOINT!,
       process.env.AZURE_SEARCH_INDEX_NAME!,
@@ -14,8 +13,7 @@ export async function GET() {
 
     const result = await client.search("*", {
       top: 50,
-      select: ["id", "title", "filename", "blobUrl", "uploadedAt"],
-      orderBy: ["uploadedAt desc"],
+      select: ["id", "filename", "blobUrl"]
     });
 
     const docs: any[] = [];
@@ -24,10 +22,4 @@ export async function GET() {
     }
 
     return NextResponse.json(docs);
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message ?? "Failed to load documents" },
-      { status: 500 }
-    );
-  }
 }

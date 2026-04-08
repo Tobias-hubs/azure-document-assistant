@@ -1,3 +1,5 @@
+
+/*
 import "dotenv/config";
 import {
   SearchIndexClient,
@@ -83,3 +85,4 @@ async function main() {
 }
 
 main().catch(console.error);
+*/
