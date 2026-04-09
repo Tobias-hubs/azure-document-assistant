@@ -53,24 +53,25 @@ export default function Home() {
       // Vector search by Azure Search
       const searchResponse = await fetch("/api/search", { 
         method: "POST", 
-        // Headers? 
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
       });
 
       const searchData = await searchResponse.json();
-      const docs = searchData.docs || [];
+      const docs = searchData.docs ?? [];
 
       // Chat completion by Azure OpenAI
       const chatResponse = await fetch("/api/chat", { 
+       
         method: "POST", 
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          query, 
-          context: docs,
+          question: query, 
+          docs,
         }),
       });
-
+     
       const chatData = await chatResponse.json();
-
       // Add Ai response to chat history
       setMessages((prev) => [
         ...prev, 
