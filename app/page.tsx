@@ -90,25 +90,24 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen bg-zinc-900 text-zinc-100 flex justify-center">
-      <div className="w-full max-w-6xl flex flex-col h-full">
-        <header className="shrink-0 border-b border-zinc-700 p-6 flex items-start sm:items-center sm:justify-between gap-4">
+    <div className="h-screen bg-zinc-900 text-zinc-100 flex">
+      <div className="flex-1 flex flex-col">
+        <header className="shrink-0 h-14 px-4 text-sm"> 
+          <div className="grid grid-cols-3 items-center h-full max-w-7xl mx-auto">
           {/* Hamburger button */}
           <button
             onClick={() => setShowDocuments(true)}
-            className="p-2 text-zinc-300 hover:text-white"
+            className="text-zinc-300 hover:text-white justify-self-start -ml-4 sm:-ml-0"
           >
             ☰
           </button>
 
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-semibold flex gap-2 flex-wrap">
-              <span className="text">Internal</span>
-              <span className="text">Document</span>
-              <span className="text">Assistant</span>
+          <div className="flex flex-col items-center justify-center min-w-0">
+            <h1 className="text-sm sm:text-base font-medium text-zinc-200 truncate max-w-full">
+              Internal Document Assistant
             </h1>
 
-            {/* style logo */}
+            {/* style logo 
             <div className="flex gap-3 mt-0 -ml-4">
               <div className="w-3 h-3 rounded-full bg-white"></div>
               <div className="w-3 h-3 rounded-full bg-[#d50e1b]"></div>
@@ -117,29 +116,36 @@ export default function Home() {
               <div className="w-3 h-3 rounded-full bg-white"></div>
               <div className="w-3 h-3 rounded-full bg-white"></div>
               <div className="w-3 h-3 rounded-full bg-white"></div>
-            </div>
+            </div>*/}
 
-            <p className="text-sm text-zinc-400 mt-3">
+            <p className="text-xs text-zinc-400 truncate">
               Inloggad som: {username}
             </p>
+          </div>
+          <div />
           </div>
         </header>
 
         {/* Chat feed */}
         <div className="flex-1 overflow-auto">
+        <div className="flex flex-col gap-6 sm:gap-8 lg:gap-12 py-10 lg:py-20">
           <ChatFeed messages={messages} loading={loading} endRef={endRef} />
+        </div>
         </div>
 
         {/* Input */}
+        <div className="mx-auto w-full max-w-5xl px-4"> 
         <ChatInput
           query={query}
           setQuery={setQuery}
           loading={loading}
           onSubmit={handleChat}
         />
+        </div>
 
         {/* Upload Button */}
-        <div className="mt-3 flex justify-end">
+        <div className="mt-3">
+        <div className="mx-auto max-w-1xl px-3 flex justify-end">
           <UploadButton
           // onUploadSuccess={async (data) => {
           //   if (data.vectorStoreId) {
@@ -152,10 +158,15 @@ export default function Home() {
           // }}
           />
         </div>
+        </div>
 
+
+              {/* Not to be shown? Only for admin  */}
         {showDocuments && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex">
             <div className="w-80 bg-zinc-900 shadow-xl p-4 h-full overflow-auto">
+
+              {/*  */}
               {/* Stäng-knapp */}
               <button
                 className="mb-4 text-zinc-400 hover:text-white"
@@ -163,7 +174,8 @@ export default function Home() {
               >
                 Stäng ✕
               </button>
-
+              
+{/* Add darkmode and or (settings) */}
               <DocumentList />
             </div>
           </div>
