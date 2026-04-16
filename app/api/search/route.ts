@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const results = await searchClient.search(query, {
       top: 5,
-      select: ["filename", "content", "blobUrl"],
+      select: ["filename", "content"],
     });
 
     const documents = [];

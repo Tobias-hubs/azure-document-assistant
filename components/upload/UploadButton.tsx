@@ -63,7 +63,7 @@ return (
         onClick={() => document.getElementById("pdfInput")?.click()}
         disabled={loading}
         >
-            {loading ? "Loading..." : "Ladda upp Dokument"}
+            {loading ? "Loading..." : ""}
         </button>
     </div>
   );

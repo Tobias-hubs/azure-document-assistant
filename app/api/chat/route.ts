@@ -3,7 +3,7 @@ import { AzureOpenAI } from "openai";
 
 const client = new AzureOpenAI({
   apiKey: process.env.AZURE_OPENAI_KEY!,
-  endpoint: process.env.AZURE_OPENAI_ENDPOINT!,   // endast bas-URI
+  endpoint: process.env.AZURE_OPENAI_ENDPOINT!,  
   deployment: process.env.AZURE_OPENAI_DEPLOYMENT!,
   apiVersion: "2024-12-01-preview",
 });
@@ -41,4 +41,3 @@ export async function POST(req: NextRequest) {
     answer: response.choices[0].message.content,
   });
 }
-``

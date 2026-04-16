@@ -17,5 +17,6 @@ export type Message = {
   text: string;
   context?: SourceRef[]; // Result from Azure Search
   vision?: VisionRef[]; 
+  imageUrl?: string;
 };
 

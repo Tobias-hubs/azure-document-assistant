@@ -60,7 +60,50 @@ export default function Home() {
       const searchData = await searchResponse.json();
       const docs = searchData.docs ?? [];
 
-      // Chat completion by Azure OpenAI
+      // VISION 
+      const isImageQuestion = 
+      /bild|bilder|diagram|figur|illustration/i.test(query);
+
+      if (isImageQuestion && docs.length > 0) {
+        const docIntResponse = await fetch("/api/document-intelligence", {
+          method: "POST",
+        });
+        const docIntData = await docIntResponse.json();
+
+        const figures = docIntData.analyseResult?.figures ?? [];
+
+        const pageNumber = figures[0]?.boundingRegions?.[0]?.pageNumber; 
+
+        if (!pageNumber) { 
+          setMessages((prev) => [
+            ...prev,
+            { sender: "ai", text: "Hittar ej bild på angivna sidan."},
+          ]);
+          
+        } else { 
+        const visionResponse = await fetch("/api/vision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            pdfUrl: `https://internaldocassist01.blob.core.windows.net/documents/${docs[0].filename}`, // Need to change to proxy 
+            pageNumber, 
+            question: query,
+            }),
+          });
+          const visionData = await visionResponse.json();
+
+          setMessages((prev) => [
+            ...prev, 
+            { sender: "ai", text: visionData.answer,
+              vision: [ { 
+                blobUrl: visionData.imageUrl } ],
+              },
+          ]);
+        }
+          return;
+      }
+
+      // Chat (Text) completion by Azure OpenAI
       const chatResponse = await fetch("/api/chat", { 
        
         method: "POST", 
@@ -83,10 +126,11 @@ export default function Home() {
         ...prev,
         { sender: "ai", text: "Something went wrong. Please try again." },
       ]);
-    }
+    } finally { 
 
     setQuery("");
-    setLoading(false);
+    setLoading(false); 
+  }
   }
 
   return (
