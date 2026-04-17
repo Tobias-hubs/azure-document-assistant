@@ -1,5 +1,8 @@
+export const runtime = "nodejs";
+console.log("vision route called");
 import { NextRequest, NextResponse } from "next/server";
 import { AzureOpenAI } from "openai";
+import { getBlobSasUrl } from "@/lib/sasHelper";
 
 const client = new AzureOpenAI({ 
     apiKey: process.env.AZURE_OPENAI_KEY!, 
@@ -8,13 +11,26 @@ const client = new AzureOpenAI({
 }); 
 
 export async function POST(req: NextRequest) {
-    const { pdfUrl, pageNumber, question } = await req.json();
+    console.log("vision POST request received"); 
 
-    if (!pdfUrl || !pageNumber || !question) {
-        return NextResponse.json({ error: "Missing pdfUrl, pageNumber or question" }, { status: 400 });
+    const { blobName, pageNumber, question } = await req.json();
+
+    if (!blobName || !question) {
+        return NextResponse.json({ error: "Missing blobName or question" }, 
+            { status: 400 }
+        );
     }
 
-    const pageUrl = `${pdfUrl}/pages/${pageNumber}`;
+    const sasUrl = getBlobSasUrl( 
+        process.env.AZURE_STORAGE_CONTAINER_NAME!, 
+        blobName
+    );
+    
+    console.log("Generated SAS URL:", sasUrl);
+
+    const imageUrl = pageNumber 
+    ? `${sasUrl}&page=${pageNumber}` 
+    : sasUrl;
 
     const response = await client.chat.completions.create({
         model: process.env.AZURE_OPENAI_DEPLOYMENT!,
@@ -24,10 +40,9 @@ export async function POST(req: NextRequest) {
                 content: [ 
                     { type: "text", text: question },
                     { type: "image_url",
-                     image_url: { url: pageUrl } 
+                     image_url: { url: imageUrl } 
                     
-                        }
-
+                    }
                 ]
             }
         ]
@@ -35,6 +50,6 @@ export async function POST(req: NextRequest) {
 
 return NextResponse.json({
     answer: response.choices[0].message.content,
-    imageUrl: pageUrl,    
+    imageUrl: imageUrl,    
 });
 }

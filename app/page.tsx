@@ -7,7 +7,6 @@ import { UploadButton } from "@/components/upload/UploadButton";
 import { Message } from "@/components/types/chat";
 import { ChatFeed } from "@/components/chat/ChatFeed";
 import { ChatInput } from "@/components/chat/ChatInput";
-// import { PdfChip } from "./components/documents/PdfChip";
 import { DocumentList } from "@/components/documents/DocumentList";
 
 
@@ -44,7 +43,8 @@ export default function Home() {
   async function handleChat() { 
     if (!query.trim()) return;
 
-    setMessages((prev) => [...prev, { sender: "user", text: query }
+    setMessages((prev) => [...prev,
+      { sender: "user", text: query }
     ]);
     //setQuery("");
     setLoading(true);
@@ -60,34 +60,23 @@ export default function Home() {
       const searchData = await searchResponse.json();
       const docs = searchData.docs ?? [];
 
+
       // VISION 
-      const isImageQuestion = 
-      /bild|bilder|diagram|figur|illustration/i.test(query);
+      // const isImageQuestion = 
+      // /bild|bilder|diagram|figur|illustration/i.test(query);
 
-      if (isImageQuestion && docs.length > 0) {
-        const docIntResponse = await fetch("/api/document-intelligence", {
-          method: "POST",
-        });
-        const docIntData = await docIntResponse.json();
-
-        const figures = docIntData.analyseResult?.figures ?? [];
-
-        const pageNumber = figures[0]?.boundingRegions?.[0]?.pageNumber; 
-
-        if (!pageNumber) { 
-          setMessages((prev) => [
-            ...prev,
-            { sender: "ai", text: "Hittar ej bild på angivna sidan."},
-          ]);
-          
-        } else { 
+      // VISION works with explicit jpg file from blob storage
+     // const imageDoc = { filename: "animal-8748794_1280.jpg" }; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing, 
+     // NOTE GhostScript or Poppler as stateless rasterizer  for pdf to image 
+     const imageDoc = docs.find((doc: any) => /image|diagram|figur|illustration/i.test(doc.filename) ); 
+     if (imageDoc) {
+        
         const visionResponse = await fetch("/api/vision", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            pdfUrl: `https://internaldocassist01.blob.core.windows.net/documents/${docs[0].filename}`, // Need to change to proxy 
-            pageNumber, 
-            question: query,
+            blobName: imageDoc.filename,
+            question: query, 
             }),
           });
           const visionData = await visionResponse.json();
@@ -99,7 +88,7 @@ export default function Home() {
                 blobUrl: visionData.imageUrl } ],
               },
           ]);
-        }
+
           return;
       }
 
