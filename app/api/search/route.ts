@@ -7,6 +7,11 @@ const searchClient = new SearchClient(
     new AzureKeyCredential(process.env.AZURE_SEARCH_API_KEY!)
 );
 
+type SearchDocument = { 
+    filename: string; 
+    content?: string;
+};
+
 export async function POST(req: NextRequest) {
  
     const { query } = await req.json();
@@ -22,12 +27,17 @@ export async function POST(req: NextRequest) {
       select: ["filename", "content"],
     });
 
-    const documents = [];
+    const documents: SearchDocument[] = [];
 
     for await (const result of results.results) {
-      documents.push(result.document);
+      const doc = result.document as SearchDocument;
+      documents.push(doc);
     }
 
+
+    console.log("Search results: ", query); 
+    console.log(" Search results: ", documents.map(d => d.filename)
+  );
   
     return NextResponse.json({ query, docs: documents });
     }

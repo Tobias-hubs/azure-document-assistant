@@ -13,13 +13,17 @@ const client = new AzureOpenAI({
 export async function POST(req: NextRequest) {
     console.log("vision POST request received"); 
 
-    const { blobName, pageNumber, question } = await req.json();
+    const { question } = await req.json();
 
-    if (!blobName || !question) {
+
+    if (!question) {
         return NextResponse.json({ error: "Missing blobName or question" }, 
             { status: 400 }
         );
     }
+
+     const blobName = "animal-8748794_1280.jpg"; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing,
+
 
     const sasUrl = getBlobSasUrl( 
         process.env.AZURE_STORAGE_CONTAINER_NAME!, 
@@ -28,9 +32,9 @@ export async function POST(req: NextRequest) {
     
     console.log("Generated SAS URL:", sasUrl);
 
-    const imageUrl = pageNumber 
-    ? `${sasUrl}&page=${pageNumber}` 
-    : sasUrl;
+    // const imageUrl = pageNumber 
+    // ? `${sasUrl}&page=${pageNumber}` 
+    // : sasUrl;
 
     const response = await client.chat.completions.create({
         model: process.env.AZURE_OPENAI_DEPLOYMENT!,
@@ -40,7 +44,7 @@ export async function POST(req: NextRequest) {
                 content: [ 
                     { type: "text", text: question },
                     { type: "image_url",
-                     image_url: { url: imageUrl } 
+                     image_url: { url: sasUrl } 
                     
                     }
                 ]
@@ -50,6 +54,6 @@ export async function POST(req: NextRequest) {
 
 return NextResponse.json({
     answer: response.choices[0].message.content,
-    imageUrl: imageUrl,    
+    imageUrl: sasUrl,    
 });
 }
