@@ -13,7 +13,7 @@ export function getBlobSasUrl(container: string, blobName: string) {
         { 
             containerName: container, 
             blobName, 
-            permissions: BlobSASPermissions.parse("r"),
+            permissions: BlobSASPermissions.parse("r"), // Read-only access
             expiresOn, 
         }, 
         credential

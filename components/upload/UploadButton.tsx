@@ -1,3 +1,5 @@
+/*
+
 import toast from "react-hot-toast";
 import { useState } from "react";
  
@@ -10,7 +12,7 @@ export function UploadButton({ onUploadSuccess }: UploadButtonProps) {
 
 const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { 
    // <input type="file"> gives a File object. 
-    const file = e.target.files?.[0]; // INGEST 1 First initiation upload file
+    const file = e.target.files?.[0]; 
     if (!file) return; 
 
     setLoading(true);
@@ -68,3 +70,5 @@ return (
     </div>
   );
 }
+
+*/

@@ -12,6 +12,7 @@
   "dependencies": {
     "@azure/search-documents": "^12.2.0",
     "@azure/storage-blob": "^12.31.0",
+    "dotenv": "^17.4.2",
     "next": "16.2.1",
     "openai": "^6.32.0",
     "react": "19.2.4",

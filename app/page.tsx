@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { UploadButton } from "@/components/upload/UploadButton";
+//import { UploadButton } from "@/components/upload/UploadButton";
 import { Message } from "@/components/types/chat";
 import { ChatFeed } from "@/components/chat/ChatFeed";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -70,11 +70,11 @@ export default function Home() {
 
       // VISION works with explicit jpg file from blob storage
      // const imageDoc = { filename: "animal-8748794_1280.jpg" }; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing, 
-     // NOTE GhostScript or Poppler as stateless rasterizer  for pdf to image 
-     const isImageQuestion = 
-/bild|image|diagram|figur|grafik|picture|photo/i.test(
-    query.toLowerCase()
-  );
+     // NOTE GhostScript or Poppler as stateless rasterizer for pdf to image 
+      const isImageQuestion = 
+        /bild|image|diagram|figur|grafik|picture|photo/i.test(
+        query.toLowerCase()
+        );
 
      if (isImageQuestion) {
         
@@ -98,7 +98,7 @@ export default function Home() {
           return;
       }
 
-      // Chat (Text) completion by Azure OpenAI
+      // Chat (Text) by Azure OpenAI
       const chatResponse = await fetch("/api/chat", { 
        
         method: "POST", 
@@ -172,8 +172,10 @@ export default function Home() {
         </div>
         </div>
 
-        {/* Input */}
-        <div className="mx-auto w-full max-w-5xl px-4"> 
+        {/* Input  */}
+       
+          <div className="fixed bottom-4 left-1/2 w-full max-w-5xl -translate-x-1/2 px-4">
+          <div className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md shadow-xl">
         <ChatInput
           query={query}
           setQuery={setQuery}
@@ -181,8 +183,9 @@ export default function Home() {
           onSubmit={handleChat}
         />
         </div>
+        </div>
 
-        {/* Upload Button */}
+        {/* Upload Button 
         <div className="mt-3">
         <div className="mx-auto max-w-1xl px-3 flex justify-end">
           <UploadButton
@@ -197,7 +200,7 @@ export default function Home() {
           // }}
           />
         </div>
-        </div>
+        </div> */}
 
 
               {/* Not to be shown? Only for admin  */}

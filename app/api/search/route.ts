@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Find right documents from Azure Search INDEX based on query
     const results = await searchClient.search(query, {
       top: 5,
       select: ["filename", "content"],

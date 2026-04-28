@@ -7,7 +7,7 @@ export function ChatMessage({ msg }: { msg: Message }) {
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
         className={`
-                max-w-[70%]
+                max-w-[85%] sm:max-w-[75%] lg:max-w-[65%]
                 px-4 py-3 
                 rounded-2xl 
                 leading-relaxed 
@@ -26,12 +26,12 @@ export function ChatMessage({ msg }: { msg: Message }) {
         {msg.vision?.map((vision, index) => (
           <div
             key={index}
-            className="mt-4 p-3 bg-zinc-900 rounded-lg border border-zinc-700"
+            className="mt-4 p-3 bg-zinc-900 rounded-lg border border-zinc-700 max-w-full overflow-hidden"
           >
             <img
               src={vision.blobUrl}
               alt="Bild från Dokument"
-              className="rounded-lg max-w-full border border-zinc-600"
+              className="rounded-lg max-w-full max-h-[320px] sm:max-h-[420px] lg:max-h-[500px] object-contain border border-zinc-600"
             />
             {vision.caption && (
               <div className="mt-2 text-sm text-zinc-300">{vision.caption}</div>
