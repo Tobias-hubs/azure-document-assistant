@@ -19,16 +19,27 @@ export async function POST(req: NextRequest) {
   }
 
   const context = docs
-    .map((doc: any, i: number) => `Source ${i + 1}:\n${doc.content}`)
-    .join("\n\n");
+    .map((doc: any, i: number) => { 
+      const text = doc.content ? `DOCUMENT TEXT:\n${doc.content}` : "";
+      const images = doc.imageText ? `IMAGE DESCRIPTION:\n${doc.imageText}` : "";
+
+      return `Source ${i + 1}:\n${[text, images].filter(Boolean).join("\n\n")}`;
+    })
+    .join("\n\n---\n\n");
 
   const response = await client.chat.completions.create({
     model: process.env.AZURE_OPENAI_DEPLOYMENT!,
     messages: [
       {
         role: "system",
-        content:
-          "Du är en hjälpsam assistent. Svara endast baserat på given kontext. Om svaret inte finns i kontexten, säg det tydligt.",
+        content: `
+      Du är en hjälpsam assistent.
+      Svara endast baserat på given kontext.
+
+      - Använd IMAGE DESCRIPTIONS när frågan rör visuellt innehåll.
+      - Om frågan inte kan besvaras utan att se bilden igen,
+      svara exakt med: [NEEDS_VISION]
+      `,
       },
       {
         role: "user",
@@ -37,7 +48,10 @@ export async function POST(req: NextRequest) {
     ],
   });
 
+  const text = response.choices[0].message.content;
+
   return NextResponse.json({
-    answer: response.choices[0].message.content,
+    answer: text?.replace("[NEEDS_VISION]", "").trim(), 
+    needsVision: text?.includes("[NEEDS_VISION]"),
   });
 }

@@ -1,4 +1,5 @@
-import "dotenv/config"; 
+import dotenv from "dotenv"; 
+dotenv.config({ path: ".env.local" });
 import { SearchClient, AzureKeyCredential } from "@azure/search-documents";
 import OpenAI from "openai";
 

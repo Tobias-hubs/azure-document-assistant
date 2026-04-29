@@ -58,45 +58,9 @@ export default function Home() {
       });
 
       const searchData = await searchResponse.json();
-
       const docs = searchData.docs ?? [];
       
       console.log(" Docs from search:", docs.map((d: any) => d.filename) );
-
-
-      // VISION 
-      // const isImageQuestion = 
-      // /bild|bilder|diagram|figur|illustration/i.test(query);
-
-      // VISION works with explicit jpg file from blob storage
-     // const imageDoc = { filename: "animal-8748794_1280.jpg" }; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing, 
-     // NOTE GhostScript or Poppler as stateless rasterizer for pdf to image 
-      const isImageQuestion = 
-        /bild|image|diagram|figur|grafik|picture|photo/i.test(
-        query.toLowerCase()
-        );
-
-     if (isImageQuestion) {
-        
-        const visionResponse = await fetch("/api/vision", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            question: query, 
-            }),
-          });
-          const visionData = await visionResponse.json();
-
-          setMessages((prev) => [
-            ...prev, 
-            { sender: "ai", text: visionData.answer,
-              vision: [ { 
-                blobUrl: visionData.imageUrl } ],
-              },
-          ]);
-
-          return;
-      }
 
       // Chat (Text) by Azure OpenAI
       const chatResponse = await fetch("/api/chat", { 
@@ -110,7 +74,30 @@ export default function Home() {
       });
      
       const chatData = await chatResponse.json();
-      // Add Ai response to chat history
+
+
+      if (chatData.needsVision) { 
+        const visionResponse = await fetch("/api/vision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            question: query, 
+            }),
+          });
+          const visionData = await visionResponse.json();
+
+          setMessages((prev) => [
+            ...prev, 
+            { sender: "ai",
+              text: visionData.answer,
+              vision: [ { 
+                blobUrl: visionData.imageUrl } ],
+            },
+          ]);
+
+          return;
+      }
+      
       setMessages((prev) => [
         ...prev, 
         { sender: "ai", text: chatData.answer, context: docs },
