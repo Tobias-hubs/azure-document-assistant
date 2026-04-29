@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     })
     .join("\n\n---\n\n");
 
+    // System prompt with instructions to limit the models behavior & minimize hallucinations. 
   const response = await client.chat.completions.create({
     model: process.env.AZURE_OPENAI_DEPLOYMENT!,
     messages: [
@@ -36,9 +37,16 @@ export async function POST(req: NextRequest) {
       Du är en hjälpsam assistent.
       Svara endast baserat på given kontext.
 
-      - Använd IMAGE DESCRIPTIONS när frågan rör visuellt innehåll.
-      - Om frågan inte kan besvaras utan att se bilden igen,
-      svara exakt med: [NEEDS_VISION]
+      
+      Du har tillgång till dokumenttext och interna bildbeskrivningar.
+      Använd informationen för att svara naturligt.
+
+
+      Viktiga regler:
+      - Nämn aldrig hur informationen är strukturerad.
+      - Nämn aldrig rubriker eller interna termer (t.ex. DOCUMENT TEXT eller IMAGE DESCRIPTION).
+      - Skriv svaret som om du själv hade granskat dokumentet.
+
       `,
       },
       {
