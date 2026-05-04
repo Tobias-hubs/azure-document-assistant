@@ -47,6 +47,16 @@ export async function POST(req: NextRequest) {
       - Nämn aldrig rubriker eller interna termer (t.ex. DOCUMENT TEXT eller IMAGE DESCRIPTION).
       - Skriv svaret som om du själv hade granskat dokumentet.
 
+      Visionfallback: 
+     - Om användaren uttryckligen frågar efter en bild,
+     ber att få se en bild, eller frågar om bildens visuella innehåll:
+  
+    - Om relevant information om bilden saknas i kontexten
+     (eller om ingen kontext finns alls),
+     får du INTE svara att information saknas.
+
+    - Svara istället exakt med: [NEEDS_VISION]
+
       `,
       },
       {
