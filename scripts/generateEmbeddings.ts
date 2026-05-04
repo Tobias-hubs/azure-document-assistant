@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env.local" }); 
 
 import OpenAI from "openai";
 import fetch from "node-fetch";
@@ -15,7 +15,7 @@ const openai = new OpenAI({
 });
 
 /**
- * 1️⃣ Hämta dokument (batch)
+ * Read document from Index
  */
 async function fetchDocuments(skip = 0, top = 50) {
   const url = `${SEARCH_ENDPOINT}/indexes/${INDEX_NAME}/docs/search?api-version=2023-11-01`;
@@ -30,7 +30,7 @@ async function fetchDocuments(skip = 0, top = 50) {
       search: "*",
       top,
       skip,
-      select: "id,content,imageText",
+      select: "id, content, imageText",
     }),
   });
 
@@ -42,7 +42,7 @@ async function fetchDocuments(skip = 0, top = 50) {
 }
 
 /**
- * 2️⃣ Uppdatera embeddings
+ * Update embeddings to index
  */
 async function uploadEmbedding(id: string, embedding: number[]) {
   const url = `${SEARCH_ENDPOINT}/indexes/${INDEX_NAME}/docs/index?api-version=2023-11-01`;
@@ -56,7 +56,7 @@ async function uploadEmbedding(id: string, embedding: number[]) {
     body: JSON.stringify({
       value: [
         {
-          "@search.action": "merge",
+          "@search.action": "merge", // NOTE Previous embeddings are overwritten, (inefficient in production)
           id,
           embedding,
         },
@@ -76,10 +76,10 @@ async function run() {
     if (!docs.length) break;
 
     for (const doc of docs) {
-      const text = `
-${doc.content ?? ""}
-${doc.imageText ?? ""}
-`.trim();
+    const text = `
+    ${doc.content ?? ""}
+    ${doc.imageText ?? ""}
+    `.trim();
 
       if (!text) continue;
 
