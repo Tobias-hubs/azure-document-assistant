@@ -22,7 +22,15 @@ export async function POST(req: NextRequest) {
         );
     }
 
-     const blobName = "animal-8748794_1280.jpg"; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing,
+    /* VISION Idea = Dynamic 
+    const { question, documentId, page } = await req.json();
+    
+    const pageBlob = `pdf-pages/${documentId}/page-${page}.jpg`; 
+
+    
+    */
+
+    const blobName = "animal-8748794_1280.jpg"; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing,
 
 
     const sasUrl = getBlobSasUrl( 

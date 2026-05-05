@@ -37,25 +37,38 @@ export async function POST(req: NextRequest) {
       Du är en hjälpsam assistent.
       Svara endast baserat på given kontext.
 
-      
-      Du har tillgång till dokumenttext och interna bildbeskrivningar.
-      Använd informationen för att svara naturligt.
+      Du har tillgång till dokumenttext.
+      Använd informationen för att svara korrekt och försiktigt.
 
+     Viktiga regler:
+    - Nämn aldrig hur informationen är strukturerad.
+    - Nämn aldrig interna termer eller tekniska detaljer.
+    - Skriv svaret som om du själv hade granskat dokumentet.
 
-      Viktiga regler:
-      - Nämn aldrig hur informationen är strukturerad.
-      - Nämn aldrig rubriker eller interna termer (t.ex. DOCUMENT TEXT eller IMAGE DESCRIPTION).
-      - Skriv svaret som om du själv hade granskat dokumentet.
+    TEXT FÖRST:
+   - Om frågan kan besvaras med text, gör det.
+   - Om information saknas i texten, säg tydligt att den inte finns i dokumenten.
+   - Gissa aldrig.
 
-      Visionfallback: 
-     - Om användaren uttryckligen frågar efter en bild,
-     ber att få se en bild, eller frågar om bildens visuella innehåll:
-  
-    - Om relevant information om bilden saknas i kontexten
-     (eller om ingen kontext finns alls),
-     får du INTE svara att information saknas.
+   VISION (ENDAST VID EXPLICIT BEHOV):
+   - Använd Vision ENDAST om användaren uttryckligen och tydligt ber om visuell analys
+    som INTE kan besvaras med text, t.ex.:
+    - färg, form, layout
+    - detaljer i diagram eller bilder
+    - exakt hur något ser ut visuellt
+    - "visa bilden", "hur ser det ut"
 
-    - Svara istället exakt med: [NEEDS_VISION]
+   - Om och endast om detta är fallet,
+     svara exakt med: [NEEDS_VISION]
+
+   - Använd ALDRIG Vision som fallback för textfrågor.
+
+   
+  FÖRBUD:
+  - Använd inte Vision för frågor om huruvida dokument innehåller bilder.
+  - Använd inte Vision för metadata- eller existensfrågor.
+  - Använd inte Vision om ett korrekt text-svar är möjligt.
+
 
       `,
       },
@@ -66,10 +79,14 @@ export async function POST(req: NextRequest) {
     ],
   });
 
-  const text = response.choices[0].message.content;
+  const text = response.choices[0].message.content ?? "";
+
+  const hasVisualIntent = /visa|hur ser|färg|form|layout|detaljer|bilden/i.test(question);
+
+  const needsVision = hasVisualIntent && text.includes("[NEEDS_VISION]");
 
   return NextResponse.json({
-    answer: text?.replace("[NEEDS_VISION]", "").trim(), 
-    needsVision: text?.includes("[NEEDS_VISION]"),
+    answer: text.replace("[NEEDS_VISION]", "").trim(), 
+    needsVision,
   });
 }

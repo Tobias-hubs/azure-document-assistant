@@ -28,6 +28,7 @@ async function fetchDocuments(skip = 0, top = 50) {
     },
     body: JSON.stringify({
       search: "*",
+      filter: "embeddingStatus eq null", // Only fetch documents that haven't been embedded yet.
       top,
       skip,
       select: "id, content, imageText",
@@ -56,9 +57,10 @@ async function uploadEmbedding(id: string, embedding: number[]) {
     body: JSON.stringify({
       value: [
         {
-          "@search.action": "merge", // NOTE Previous embeddings are overwritten, (inefficient in production)
+          "@search.action": "merge", 
           id,
           embedding,
+          embeddingStatus: "ready",
         },
       ],
     }),

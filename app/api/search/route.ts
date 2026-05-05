@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         queries: [ 
           { 
             kind: "vector",
-            value: queryEmbedding,
+            vector: queryEmbedding,
             fields: ["embedding"],
             kNearestNeighborsCount: 5,
           }

@@ -59,8 +59,6 @@ export default function Home() {
 
       const searchData = await searchResponse.json();
       const docs = searchData.docs ?? [];
-      
-      console.log(" Docs from search:", docs.map((d: any) => d.filename) );
 
       // Chat (Text) by Azure OpenAI
       const chatResponse = await fetch("/api/chat", { 
