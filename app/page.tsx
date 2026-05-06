@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Message } from "@/components/types/chat";
 import { ChatFeed } from "@/components/chat/ChatFeed";
 import { ChatInput } from "@/components/chat/ChatInput";
-import { DocumentList } from "@/components/documents/DocumentList";
+//import { DocumentList } from "@/components/documents/DocumentList";
 
 
 export default function Home() {
@@ -203,7 +203,7 @@ export default function Home() {
               </button>
               
 {/* Add darkmode and or (settings) */}
-              <DocumentList />
+               {/* <DocumentList /> */}
             </div>
           </div>
         )}
