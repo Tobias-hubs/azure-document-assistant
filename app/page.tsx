@@ -54,7 +54,8 @@ export default function Home() {
       const searchResponse = await fetch("/api/search", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ 
+          query, }), 
       });
 
       const searchData = await searchResponse.json();

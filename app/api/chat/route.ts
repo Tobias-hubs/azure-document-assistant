@@ -21,9 +21,7 @@ export async function POST(req: NextRequest) {
   const context = docs
     .map((doc: any, i: number) => { 
       const text = doc.content ? `DOCUMENT TEXT:\n${doc.content}` : "";
-      const images = doc.imageText ? `IMAGE DESCRIPTION:\n${doc.imageText}` : "";
-
-      return `Source ${i + 1}:\n${[text, images].filter(Boolean).join("\n\n")}`;
+      return `Source ${i + 1}:\n${[text].filter(Boolean).join("\n\n")}`;
     })
     .join("\n\n---\n\n");
 
@@ -88,5 +86,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     answer: text.replace("[NEEDS_VISION]", "").trim(), 
     needsVision,
+    page: 1,
   });
 }

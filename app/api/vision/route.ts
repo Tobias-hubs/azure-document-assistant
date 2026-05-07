@@ -13,28 +13,27 @@ const client = new AzureOpenAI({
 export async function POST(req: NextRequest) {
     console.log("vision POST request received"); 
 
-    const { question } = await req.json();
-
+    //const { question } = await req.json();
+    const { question, page } = await req.json();
 
     if (!question) {
-        return NextResponse.json({ error: "Missing blobName or question" }, 
+        return NextResponse.json({ error: "Missing question" }, 
             { status: 400 }
         );
     }
 
     /* VISION Idea = Dynamic 
-    const { question, documentId, page } = await req.json();
-    
     const pageBlob = `pdf-pages/${documentId}/page-${page}.jpg`; 
-
-    
     */
 
-    const blobName = "animal-8748794_1280.jpg"; // VISION Needs raw image format not PDF - Hardcoded (choice not data) for vision testing,
+    // Default page 1
+   const safePage = page ?? 1; 
 
+
+const blobName = `normalized_images_${safePage}.jpg`;
 
     const sasUrl = getBlobSasUrl( 
-        process.env.AZURE_STORAGE_CONTAINER_NAME!, 
+        process.env.AZURE_IMAGE_CONTAINER_NAME!, 
         blobName
     );
     

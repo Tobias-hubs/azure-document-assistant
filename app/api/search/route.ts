@@ -11,7 +11,10 @@ const openai = new OpenAI({
 const searchClient = new SearchClient(
     process.env.AZURE_SEARCH_ENDPOINT!,
     process.env.AZURE_SEARCH_INDEX_NAME!, 
-    new AzureKeyCredential(process.env.AZURE_SEARCH_API_KEY!)
+    new AzureKeyCredential(process.env.AZURE_SEARCH_API_KEY!), 
+    { 
+      apiVersion: "2023-11-01",
+    }
 );
 
 type SearchDocument = { 
@@ -37,9 +40,9 @@ export async function POST(req: NextRequest) {
     const queryEmbedding = embeddingResponse.data[0].embedding;
 
     // Find right documents from Azure Search INDEX based on query
-    const results = await searchClient.search(query, {
+  /*  const results = await searchClient.search(query, {
       top: 5,
-      select: ["filename", "content", "imageText"],
+      select: ["id", "filename", "content"],
       vectorSearch: { 
         queries: [ 
           { 
@@ -50,8 +53,15 @@ export async function POST(req: NextRequest) {
           }
         ]
       } 
-    } as any  // Workaround for missing vectorSearch type in SDK. Typesafe is only disabled for the search options, rest of the code is still typed.
-  );
+    } as any  
+  ); */
+
+  
+const results = await searchClient.search(query, {
+  top: 5,
+  select: ["id", "filename", "content"],
+});
+
 
     const documents: SearchDocument[] = [];
 

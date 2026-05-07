@@ -6,7 +6,7 @@ import fetch from "node-fetch";
 
 const SEARCH_ENDPOINT = process.env.AZURE_SEARCH_ENDPOINT!;
 const SEARCH_KEY = process.env.AZURE_SEARCH_API_KEY!;
-const INDEX_NAME = "document-index-v3";
+const INDEX_NAME = "document-index-v4";
 
 const openai = new OpenAI({
   apiKey: process.env.AZURE_OPENAI_KEY!,
@@ -31,7 +31,7 @@ async function fetchDocuments(skip = 0, top = 50) {
       filter: "embeddingStatus eq null", // Only fetch documents that haven't been embedded yet.
       top,
       skip,
-      select: "id, content, imageText",
+      select: "id, content",
     }),
   });
 
@@ -78,10 +78,9 @@ async function run() {
     if (!docs.length) break;
 
     for (const doc of docs) {
-    const text = `
-    ${doc.content ?? ""}
-    ${doc.imageText ?? ""}
-    `.trim();
+    const MAX_CHARS = 3000;
+  const text = (doc.content ?? "").slice(0, MAX_CHARS);
+
 
       if (!text) continue;
 
