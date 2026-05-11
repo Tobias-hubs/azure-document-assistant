@@ -3,6 +3,14 @@ import { Message } from "../types/chat";
 export function ChatMessage({ msg }: { msg: Message }) {
   const isUser = msg.sender === "user";
 
+  const uniqueSources = Array.from(
+    new Map(
+      (msg.context || [])
+      .filter(source => source.filename)
+      .map(source => [source.filename, source])
+    ).values()
+  );
+
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -43,7 +51,7 @@ export function ChatMessage({ msg }: { msg: Message }) {
           <div className="mt-4 border-t border-zinc-700 pt-3 space-y-2">
             <p className="text-sm text-zinc-300 font-medium">Källor:</p>
             <ul className="list-disc list-inside text-sm text-zinc-300">
-              {msg.context.map((source, index) => (
+              {uniqueSources.map((source, index) => (
                 <li key={index}>
                   {source.title || source.filename || source.id}
                 </li>

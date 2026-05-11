@@ -14,8 +14,16 @@ const openai = new OpenAI({
   defaultQuery: { "api-version": process.env.AZURE_OPENAI_API_VERSION! },
 });
 
+function chunkText(text: string, size = 1000) {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += size) {
+    chunks.push(text.slice(i, i + size));
+  } 
+  return chunks; 
+} 
+
 /**
- * Read document from Index
+ * Fetch documents from Index
  */
 async function fetchDocuments(skip = 0, top = 50) {
   const url = `${SEARCH_ENDPOINT}/indexes/${INDEX_NAME}/docs/search?api-version=2023-11-01`;
@@ -28,7 +36,7 @@ async function fetchDocuments(skip = 0, top = 50) {
     },
     body: JSON.stringify({
       search: "*",
-      filter: "embeddingStatus eq null", // Only fetch documents that haven't been embedded yet.
+     // filter: "embeddingStatus eq null",  Only fetch documents that haven't been embedded yet.
       top,
       skip,
       select: "id, content",
@@ -42,34 +50,10 @@ async function fetchDocuments(skip = 0, top = 50) {
   return res.json();
 }
 
-/**
- * Update embeddings to index
- */
-async function uploadEmbedding(id: string, embedding: number[]) {
-  const url = `${SEARCH_ENDPOINT}/indexes/${INDEX_NAME}/docs/index?api-version=2023-11-01`;
-
-  await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": SEARCH_KEY,
-    },
-    body: JSON.stringify({
-      value: [
-        {
-          "@search.action": "merge", 
-          id,
-          embedding,
-          embeddingStatus: "ready",
-        },
-      ],
-    }),
-  });
-}
-
+// Main function to upload embedding back to Index
 async function run() {
   let skip = 0;
-  const batchSize = 10;
+  const batchSize = 5;
 
   while (true) {
     const data = await fetchDocuments(skip, batchSize);
@@ -78,25 +62,57 @@ async function run() {
     if (!docs.length) break;
 
     for (const doc of docs) {
-    const MAX_CHARS = 3000;
-  const text = (doc.content ?? "").slice(0, MAX_CHARS);
+      if (doc.id.includes("_")) { 
+        continue; 
+      }
+  
+      const fullText = doc.content ?? "";
 
 
-      if (!text) continue;
+      if (!fullText.trim()) continue;
+
+      const chunks = chunkText(fullText, 1000); 
+
+      console.log(`Splitting ${doc.id} into ${chunks.length} chunks`);
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+
+        if (!chunk.trim()) continue;
 
       const emb = await openai.embeddings.create({
         model: process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT!,
-        input: text,
+        input: chunk,
       });
 
-      await uploadEmbedding(doc.id, emb.data[0].embedding);
-      console.log("Embedded:", doc.id);
+      await fetch(`${SEARCH_ENDPOINT}/indexes/${INDEX_NAME}/docs/index?api-version=2023-11-01`, {
+        method: "POST", 
+        headers: { 
+          "Content-Type": "application/json",
+          "api-key": SEARCH_KEY,
+        }, 
+        body: JSON.stringify({
+          value: [ 
+            { 
+              "@search.action": "upload", 
+              id: `${doc.id}_${i}`,
+              content: chunk, 
+              filename: doc.filename,
+              embedding: emb.data[0].embedding,
+              embeddingStatus: "ready",
+            },
+          ],
+        }),
+      });
+
+      console.log(`Chunk ${i} uploaded`);
+      }
     }
 
     skip += batchSize;
   }
 
-  console.log("✅ All embeddings done");
+  console.log("✅ All chunks embedded ");
 }
 
 run().catch(console.error);

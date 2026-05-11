@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const queryEmbedding = embeddingResponse.data[0].embedding;
 
     // Find right documents from Azure Search INDEX based on query
-  /*  const results = await searchClient.search(query, {
+   const results = await searchClient.search("*", {
       top: 5,
       select: ["id", "filename", "content"],
       vectorSearch: { 
@@ -53,14 +53,13 @@ export async function POST(req: NextRequest) {
           }
         ]
       } 
-    } as any  
-  ); */
+    } as any); 
 
   
-const results = await searchClient.search(query, {
-  top: 5,
-  select: ["id", "filename", "content"],
-});
+// const results = await searchClient.search(query, {
+//   top: 5,
+//   select: ["id", "filename", "content"],
+// });
 
 
     const documents: SearchDocument[] = [];
