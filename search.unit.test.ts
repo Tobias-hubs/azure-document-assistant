@@ -1,9 +1,20 @@
-import { blob } from "stream/consumers"
+
+jest.mock("openai", () => {
+  return jest.fn().mockImplementation(() => ({
+    embeddings: {
+      create: jest.fn().mockResolvedValue({
+        data: [
+          { embedding: [0.1, 0.2, 0.3] }
+        ],
+      }),
+    },
+  }));
+});
 
 jest.mock("@azure/search-documents", () => {
     return { 
         SearchClient: jest.fn().mockImplementation(() => ({
-            search: jest.fn().mockReturnValue({
+            search: jest.fn().mockResolvedValue({
                 results: {
                 [Symbol.asyncIterator]: async function* () {
                     yield  {
