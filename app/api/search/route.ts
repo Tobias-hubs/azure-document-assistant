@@ -71,7 +71,10 @@ export async function POST(req: NextRequest) {
 
 
     console.log("Search results: ", query); 
-    console.log(" Search results: ", documents.map(d => d.filename)
+    console.log(" Search results: ", documents.map(d => ({ 
+      filename: d.filename, 
+      preview: d.content?.slice(0, 40)
+    }))
   );
   
     return NextResponse.json({ query, docs: documents });

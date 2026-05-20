@@ -36,10 +36,10 @@ async function fetchDocuments(skip = 0, top = 50) {
     },
     body: JSON.stringify({
       search: "*",
-     // filter: "embeddingStatus eq null",  Only fetch documents that haven't been embedded yet.
+      filter: "embeddingStatus eq null",  //Only fetch documents that haven't been embedded yet.
       top,
       skip,
-      select: "id, content",
+      select: "id, content, filename",
     }),
   });
 
@@ -98,6 +98,7 @@ async function run() {
               id: `${doc.id}_${i}`,
               content: chunk, 
               filename: doc.filename,
+              filter: "embeddingStatus eq  ready",
               embedding: emb.data[0].embedding,
               embeddingStatus: "ready",
             },
@@ -107,9 +108,28 @@ async function run() {
 
       console.log(`Chunk ${i} uploaded`);
       }
+
+      await fetch(`${SEARCH_ENDPOINT}/indexes/${INDEX_NAME}/docs/index?api-version=2023-11-01`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": SEARCH_KEY,
+        }, 
+        body: JSON.stringify({
+          value: [
+            {
+              "@search.action": "merge",  
+              id: doc.id, 
+              embeddingStatus: "processed",
+            },
+          ],
+        }),
+    });
+
+    console.log(`Document ${doc.id} marked as processed`);
     }
 
-    skip += batchSize;
+    skip += 0;
   }
 
   console.log("✅ All chunks embedded ");
