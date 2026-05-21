@@ -1,13 +1,13 @@
-/*
+
 
 import toast from "react-hot-toast";
 import { useState } from "react";
  
-type UploadButtonProps = { 
+type SyncButtonProps = { 
     onUploadSuccess?: (data: { blobUrl: string; filename: string }) => void;
 };
 
-export function UploadButton({ onUploadSuccess }: UploadButtonProps) { 
+export function SyncButton({ onUploadSuccess }: SyncButtonProps) { 
     const [loading, setLoading] = useState(false);
 
 const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { 
@@ -71,4 +71,3 @@ return (
   );
 }
 
-*/

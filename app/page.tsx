@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-//import { UploadButton } from "@/components/upload/UploadButton";
+import { SyncButton } from "@/components/sync/SyncButton";
 import { Message } from "@/components/types/chat";
 import { ChatFeed } from "@/components/chat/ChatFeed";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -171,10 +171,10 @@ export default function Home() {
         </div>
         </div>
 
-        {/* Upload Button 
+        {/* Synchronize Button 
         <div className="mt-3">
         <div className="mx-auto max-w-1xl px-3 flex justify-end">
-          <UploadButton
+          <SyncButton
           // onUploadSuccess={async (data) => {
           //   if (data.vectorStoreId) {
           //     setVectorStoreId(data.vectorStoreId);
